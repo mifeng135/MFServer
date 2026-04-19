@@ -1,0 +1,966 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="头文件\3rd">
+      <UniqueIdentifier>{32284508-d2af-4e8c-bbd8-62a1f1436bcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\cjson">
+      <UniqueIdentifier>{3dd985a5-f6bc-4048-a231-9a582dba69b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\container">
+      <UniqueIdentifier>{1c256c71-7990-4aba-9047-25b2b573efe2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\drogon">
+      <UniqueIdentifier>{1f0a2745-c72c-409e-adb1-583ac565c746}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\json">
+      <UniqueIdentifier>{b1c1e915-70a1-41cb-b4ba-2ab5c23a26e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\lua">
+      <UniqueIdentifier>{91d6b497-3c6e-4a2d-85b2-98509e911605}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\queue">
+      <UniqueIdentifier>{662a07ce-87c3-4fd0-ae9f-b8a20756a041}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\sol">
+      <UniqueIdentifier>{fa57d298-76ce-461f-aca2-298aa73a2fcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\spdlog">
+      <UniqueIdentifier>{ebf44d98-3106-4b4b-a9b1-10d036459430}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\trantor">
+      <UniqueIdentifier>{c6626e21-8d9f-4c7f-8131-5b606e0639a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\drogon\plugins">
+      <UniqueIdentifier>{adca5888-d7eb-43d1-b090-599cffecf18c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\drogon\utils">
+      <UniqueIdentifier>{723e07ab-1266-458b-9a93-f39698e5e739}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\drogon\utils\monitoring">
+      <UniqueIdentifier>{5161eb79-291e-409e-a4fc-9e7bf1db84f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\trantor\net">
+      <UniqueIdentifier>{0683d3a9-6b50-4c5c-9c32-544a7d7f50a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\trantor\utils">
+      <UniqueIdentifier>{fdc5b441-c98b-46c2-b5e8-b00d163eeb39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\spdlog\sinks">
+      <UniqueIdentifier>{6678fcdc-2f73-4c88-b214-44b007747cbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\spdlog\fmt">
+      <UniqueIdentifier>{e4bdf867-2fae-4d0c-9cd1-16fcbd0e73ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\spdlog\details">
+      <UniqueIdentifier>{375e6933-022c-4772-af72-21d17b828973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\spdlog\cfg">
+      <UniqueIdentifier>{291a8085-b3fc-4aeb-a299-8efd1e19ef9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\spdlog\fmt\bundled">
+      <UniqueIdentifier>{6eca72c3-41ae-4b8c-921a-82b96dbd9fe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\core">
+      <UniqueIdentifier>{1b8201bd-ff12-40f7-a976-0c244f0e4201}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\dmon">
+      <UniqueIdentifier>{d91be79a-c6b1-4d83-b177-e05fee4ba357}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\3rd\kcp">
+      <UniqueIdentifier>{07395039-620b-4964-9a3b-48c2c8b4a49b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\MFServer\3rd\cjson\fpconv.c">
+      <Filter>头文件\3rd\cjson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\3rd\cjson\lua_cjson.c">
+      <Filter>头文件\3rd\cjson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\3rd\cjson\strbuf.c">
+      <Filter>头文件\3rd\cjson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\3rd\dmon\dmon.c">
+      <Filter>头文件\3rd\dmon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFApplication.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFIoPool.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaExport.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaExtend.c">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaSeri.c">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaService.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaServiceManager.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaShareData.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFMsgPack.c">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFMysqlClient.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFMysqlConnectPool.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFNetManager.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFpb.c">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFRedisConnectPool.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFSHA1.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFSHA256.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFTcpClient.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFTcpServer.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFUtil.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFValue.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFWebServer.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFRedisClient.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFConnectionManager.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFAnnotationHandle.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaByteCodeCache.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFUdpServer.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFJsonConfig.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFFileWatch.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFUdpChannel.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\3rd\kcp\ikcp.c">
+      <Filter>头文件\3rd\kcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFUdpChannelManager.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFServer\core\MFLuaProfiler.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\MFServer\3rd\cjson\fpconv.h">
+      <Filter>头文件\3rd\cjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\cjson\strbuf.h">
+      <Filter>头文件\3rd\cjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\container\unordered_dense.h">
+      <Filter>头文件\3rd\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\Attribute.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\CacheMap.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\Cookie.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\DrClassMap.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\DrObject.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\drogon.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\drogon_callbacks.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\drogon_test.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\DrTemplate.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\DrTemplateBase.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\exports.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpAppFramework.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpBinder.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpClient.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpController.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpFilter.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpMiddleware.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpRequest.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpResponse.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpSimpleController.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpTypes.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpViewData.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\IntranetIpFilter.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\IOThreadStorage.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\LocalHostFilter.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\MultiPart.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\NotFound.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\PubSubService.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\RateLimiter.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\RequestStream.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\Session.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\UploadFile.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\WebSocketClient.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\WebSocketConnection.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\WebSocketController.h">
+      <Filter>头文件\3rd\drogon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\AccessLogger.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\GlobalFilters.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\Hodor.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\Plugin.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\PromExporter.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\RealIpResolver.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\Redirector.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\SecureSSLRedirector.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\SlashRemover.h">
+      <Filter>头文件\3rd\drogon\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\coroutine.h">
+      <Filter>头文件\3rd\drogon\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\FunctionTraits.h">
+      <Filter>头文件\3rd\drogon\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\HttpConstraint.h">
+      <Filter>头文件\3rd\drogon\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring.h">
+      <Filter>头文件\3rd\drogon\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\OStringStream.h">
+      <Filter>头文件\3rd\drogon\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\Utilities.h">
+      <Filter>头文件\3rd\drogon\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Collector.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Counter.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Gauge.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Histogram.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Metric.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Registry.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Sample.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\StopWatch.h">
+      <Filter>头文件\3rd\drogon\utils\monitoring</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\allocator.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\assertions.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\config.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\forwards.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\json.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\json_features.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\reader.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\value.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\version.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\json\writer.h">
+      <Filter>头文件\3rd\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\lua\lauxlib.h">
+      <Filter>头文件\3rd\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\lua\lua.h">
+      <Filter>头文件\3rd\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\lua\luaconf.h">
+      <Filter>头文件\3rd\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\lua\lualib.h">
+      <Filter>头文件\3rd\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\exports.h">
+      <Filter>头文件\3rd\trantor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\AsyncStream.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\callbacks.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\Certificate.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\Channel.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\EventLoop.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\EventLoopThread.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\EventLoopThreadPool.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\InetAddress.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\Resolver.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TcpClient.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TcpConnection.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TcpServer.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TLSPolicy.h">
+      <Filter>头文件\3rd\trantor\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\AsyncFileLogger.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\ConcurrentTaskQueue.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Date.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Funcs.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\LockFreeQueue.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Logger.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\LogStream.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\MsgBuffer.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\NonCopyable.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\ObjectPool.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\SerialTaskQueue.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\TaskQueue.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\TimingWheel.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Utilities.h">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\async.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\async_logger.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\async_logger-inl.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\common.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\common-inl.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\formatter.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fwd.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\logger.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\logger-inl.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\mdc.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\pattern_formatter.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\pattern_formatter-inl.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\spdlog.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\spdlog-inl.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\stopwatch.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\tweakme.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\version.h">
+      <Filter>头文件\3rd\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\argv.h">
+      <Filter>头文件\3rd\spdlog\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\env.h">
+      <Filter>头文件\3rd\spdlog\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\helpers.h">
+      <Filter>头文件\3rd\spdlog\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\helpers-inl.h">
+      <Filter>头文件\3rd\spdlog\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\android_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ansicolor_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ansicolor_sink-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\base_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\base_sink-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\basic_file_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\basic_file_sink-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\callback_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\daily_file_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\dist_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\dup_filter_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\hourly_file_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\kafka_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\mongo_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\msvc_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\null_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ostream_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\qt_sinks.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ringbuffer_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\rotating_file_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\rotating_file_sink-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\sink-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_color_sinks.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_color_sinks-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_sinks.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_sinks-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\syslog_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\systemd_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\tcp_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\udp_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\win_eventlog_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\wincolor_sink.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\wincolor_sink-inl.h">
+      <Filter>头文件\3rd\spdlog\sinks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\backtracer.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\backtracer-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\circular_q.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\console_globals.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\file_helper.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\file_helper-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\fmt_helper.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg_buffer.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg_buffer-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\mpmc_blocking_q.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\null_mutex.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\os.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\os-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\periodic_worker.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\periodic_worker-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\registry.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\registry-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\synchronous_factory.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\tcp_client.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\tcp_client-windows.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\thread_pool.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\thread_pool-inl.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\udp_client.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\udp_client-windows.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\windows_include.h">
+      <Filter>头文件\3rd\spdlog\details</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bin_to_hex.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\chrono.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\compile.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\fmt.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\ostr.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\ranges.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\std.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\xchar.h">
+      <Filter>头文件\3rd\spdlog\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\args.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\chrono.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\color.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\compile.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\core.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\format.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\format-inl.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\locale.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\os.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\ostream.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\printf.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\ranges.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\std.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\xchar.h">
+      <Filter>头文件\3rd\spdlog\fmt\bundled</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\sol\config.hpp">
+      <Filter>头文件\3rd\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\sol\forward.hpp">
+      <Filter>头文件\3rd\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\sol\sol.hpp">
+      <Filter>头文件\3rd\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\queue\blockingconcurrentqueue.h">
+      <Filter>头文件\3rd\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\queue\concurrentqueue.h">
+      <Filter>头文件\3rd\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\queue\lightweightsemaphore.h">
+      <Filter>头文件\3rd\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFApplication.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFFileWatch.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFIoPool.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFJsonExport.h">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaExport.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaExtend.h">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaMessage.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaSeri.h">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaService.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaServiceManager.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaShareData.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFMacro.h">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFMsgPack.h">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFMysqlClient.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFMysqlConnectPool.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFNetManager.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFObjectPool.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFpb.h">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFpbcExport.h">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFRedisConnectPool.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFSHA1.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFSHA256.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFSnowflake.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFSpinLock.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFTcpClient.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFTcpServer.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFUtil.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFValue.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFWebServer.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFRedisClient.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFConnectionManager.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFAnnotationHandle.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaByteCodeCache.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFUdpServer.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFJsonConfig.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\dmon\dmon.h">
+      <Filter>头文件\3rd\dmon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFUdpChannel.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\kcp\ikcp.h">
+      <Filter>头文件\3rd\kcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFUdpChannelManager.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\MPSCQueue.hpp">
+      <Filter>头文件\3rd\trantor\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\3rd\lua\lsproto.h">
+      <Filter>头文件\3rd\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MFServer\core\MFLuaProfiler.hpp">
+      <Filter>源文件\core</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

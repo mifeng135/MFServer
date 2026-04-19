@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+// 自定义 Message 选项；login 等里写 option (mf.msgId) = 数字;
+// 扩展号 50001 位于自定义常用区间 50000–99999
+extend google.protobuf.MessageOptions {
+  optional int32 msgId = 50001;
+}

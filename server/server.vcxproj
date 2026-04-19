@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\MFServer\3rd\cjson\fpconv.c" />
+    <ClCompile Include="..\MFServer\3rd\cjson\lua_cjson.c" />
+    <ClCompile Include="..\MFServer\3rd\cjson\strbuf.c" />
+    <ClCompile Include="..\MFServer\3rd\dmon\dmon.c" />
+    <ClCompile Include="..\MFServer\3rd\kcp\ikcp.c" />
+    <ClCompile Include="..\MFServer\core\MFAnnotationHandle.cpp" />
+    <ClCompile Include="..\MFServer\core\MFApplication.cpp" />
+    <ClCompile Include="..\MFServer\core\MFConnectionManager.cpp" />
+    <ClCompile Include="..\MFServer\core\MFFileWatch.cpp" />
+    <ClCompile Include="..\MFServer\core\MFIoPool.cpp" />
+    <ClCompile Include="..\MFServer\core\MFJsonConfig.cpp" />
+    <ClCompile Include="..\MFServer\core\MFLuaByteCodeCache.cpp" />
+    <ClCompile Include="..\MFServer\core\MFLuaExport.cpp" />
+    <ClCompile Include="..\MFServer\core\MFLuaExtend.c" />
+    <ClCompile Include="..\MFServer\core\MFLuaProfiler.cpp" />
+    <ClCompile Include="..\MFServer\core\MFLuaSeri.c" />
+    <ClCompile Include="..\MFServer\core\MFLuaService.cpp" />
+    <ClCompile Include="..\MFServer\core\MFLuaServiceManager.cpp" />
+    <ClCompile Include="..\MFServer\core\MFLuaShareData.cpp" />
+    <ClCompile Include="..\MFServer\core\MFMsgPack.c" />
+    <ClCompile Include="..\MFServer\core\MFMysqlClient.cpp" />
+    <ClCompile Include="..\MFServer\core\MFMysqlConnectPool.cpp" />
+    <ClCompile Include="..\MFServer\core\MFNetManager.cpp" />
+    <ClCompile Include="..\MFServer\core\MFpb.c" />
+    <ClCompile Include="..\MFServer\core\MFRedisClient.cpp" />
+    <ClCompile Include="..\MFServer\core\MFRedisConnectPool.cpp" />
+    <ClCompile Include="..\MFServer\core\MFSHA1.cpp" />
+    <ClCompile Include="..\MFServer\core\MFSHA256.cpp" />
+    <ClCompile Include="..\MFServer\core\MFTcpClient.cpp" />
+    <ClCompile Include="..\MFServer\core\MFTcpServer.cpp" />
+    <ClCompile Include="..\MFServer\core\MFUdpChannel.cpp" />
+    <ClCompile Include="..\MFServer\core\MFUdpChannelManager.cpp" />
+    <ClCompile Include="..\MFServer\core\MFUdpServer.cpp" />
+    <ClCompile Include="..\MFServer\core\MFUtil.cpp" />
+    <ClCompile Include="..\MFServer\core\MFValue.cpp" />
+    <ClCompile Include="..\MFServer\core\MFWebServer.cpp" />
+    <ClCompile Include="..\MFServer\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\MFServer\3rd\cjson\fpconv.h" />
+    <ClInclude Include="..\MFServer\3rd\cjson\strbuf.h" />
+    <ClInclude Include="..\MFServer\3rd\container\unordered_dense.h" />
+    <ClInclude Include="..\MFServer\3rd\dmon\dmon.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\Attribute.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\CacheMap.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\Cookie.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\DrClassMap.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\DrObject.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\drogon.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\drogon_callbacks.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\drogon_test.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\DrTemplate.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\DrTemplateBase.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\exports.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpAppFramework.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpBinder.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpClient.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpController.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpFilter.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpMiddleware.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpRequest.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpResponse.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpSimpleController.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpTypes.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\HttpViewData.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\IntranetIpFilter.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\IOThreadStorage.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\LocalHostFilter.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\MultiPart.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\NotFound.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\AccessLogger.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\GlobalFilters.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\Hodor.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\Plugin.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\PromExporter.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\RealIpResolver.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\Redirector.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\SecureSSLRedirector.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\plugins\SlashRemover.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\PubSubService.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\RateLimiter.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\RequestStream.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\Session.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\UploadFile.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\coroutine.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\FunctionTraits.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\HttpConstraint.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Collector.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Counter.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Gauge.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Histogram.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Metric.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Registry.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\Sample.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\monitoring\StopWatch.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\OStringStream.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\utils\Utilities.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\WebSocketClient.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\WebSocketConnection.h" />
+    <ClInclude Include="..\MFServer\3rd\drogon\WebSocketController.h" />
+    <ClInclude Include="..\MFServer\3rd\json\allocator.h" />
+    <ClInclude Include="..\MFServer\3rd\json\assertions.h" />
+    <ClInclude Include="..\MFServer\3rd\json\config.h" />
+    <ClInclude Include="..\MFServer\3rd\json\forwards.h" />
+    <ClInclude Include="..\MFServer\3rd\json\json.h" />
+    <ClInclude Include="..\MFServer\3rd\json\json_features.h" />
+    <ClInclude Include="..\MFServer\3rd\json\reader.h" />
+    <ClInclude Include="..\MFServer\3rd\json\value.h" />
+    <ClInclude Include="..\MFServer\3rd\json\version.h" />
+    <ClInclude Include="..\MFServer\3rd\json\writer.h" />
+    <ClInclude Include="..\MFServer\3rd\kcp\ikcp.h" />
+    <ClInclude Include="..\MFServer\3rd\lua\lauxlib.h" />
+    <ClInclude Include="..\MFServer\3rd\lua\lsproto.h" />
+    <ClInclude Include="..\MFServer\3rd\lua\lua.h" />
+    <ClInclude Include="..\MFServer\3rd\lua\luaconf.h" />
+    <ClInclude Include="..\MFServer\3rd\lua\lualib.h" />
+    <ClInclude Include="..\MFServer\3rd\queue\blockingconcurrentqueue.h" />
+    <ClInclude Include="..\MFServer\3rd\queue\concurrentqueue.h" />
+    <ClInclude Include="..\MFServer\3rd\queue\lightweightsemaphore.h" />
+    <ClInclude Include="..\MFServer\3rd\sol\config.hpp" />
+    <ClInclude Include="..\MFServer\3rd\sol\forward.hpp" />
+    <ClInclude Include="..\MFServer\3rd\sol\sol.hpp" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\async.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\async_logger-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\async_logger.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\argv.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\env.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\helpers-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\cfg\helpers.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\common-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\common.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\backtracer-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\backtracer.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\circular_q.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\console_globals.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\file_helper-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\file_helper.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\fmt_helper.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg_buffer-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\log_msg_buffer.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\null_mutex.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\os-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\os.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\periodic_worker-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\periodic_worker.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\registry-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\registry.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\synchronous_factory.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\tcp_client-windows.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\tcp_client.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\thread_pool-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\thread_pool.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\udp_client-windows.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\udp_client.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\details\windows_include.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\args.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\chrono.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\color.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\compile.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\locale.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\os.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\std.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\bundled\xchar.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\chrono.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\compile.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\fmt.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\ostr.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\ranges.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\std.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fmt\xchar.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\formatter.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\fwd.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\logger-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\logger.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\mdc.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\pattern_formatter-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\pattern_formatter.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\android_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ansicolor_sink-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\base_sink-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\base_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\basic_file_sink-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\callback_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\dup_filter_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\hourly_file_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\kafka_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\mongo_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\null_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\qt_sinks.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\ringbuffer_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\rotating_file_sink-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\sink-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_color_sinks-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_sinks-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\systemd_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\tcp_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\udp_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\wincolor_sink-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\sinks\win_eventlog_sink.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\spdlog-inl.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\spdlog.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\stopwatch.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\tweakme.h" />
+    <ClInclude Include="..\MFServer\3rd\spdlog\version.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\exports.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\AsyncStream.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\callbacks.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\Certificate.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\Channel.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\EventLoop.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\EventLoopThread.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\EventLoopThreadPool.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\InetAddress.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\Resolver.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TcpClient.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TcpConnection.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TcpServer.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\net\TLSPolicy.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\AsyncFileLogger.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\ConcurrentTaskQueue.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Date.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Funcs.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\LockFreeQueue.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Logger.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\LogStream.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\MPSCQueue.hpp" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\MsgBuffer.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\NonCopyable.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\ObjectPool.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\SerialTaskQueue.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\TaskQueue.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\TimingWheel.h" />
+    <ClInclude Include="..\MFServer\3rd\trantor\utils\Utilities.h" />
+    <ClInclude Include="..\MFServer\core\MFAnnotationHandle.hpp" />
+    <ClInclude Include="..\MFServer\core\MFApplication.hpp" />
+    <ClInclude Include="..\MFServer\core\MFConnectionManager.hpp" />
+    <ClInclude Include="..\MFServer\core\MFFileWatch.hpp" />
+    <ClInclude Include="..\MFServer\core\MFIoPool.hpp" />
+    <ClInclude Include="..\MFServer\core\MFJsonConfig.hpp" />
+    <ClInclude Include="..\MFServer\core\MFJsonExport.h" />
+    <ClInclude Include="..\MFServer\core\MFLuaByteCodeCache.hpp" />
+    <ClInclude Include="..\MFServer\core\MFLuaExport.hpp" />
+    <ClInclude Include="..\MFServer\core\MFLuaExtend.h" />
+    <ClInclude Include="..\MFServer\core\MFLuaMessage.hpp" />
+    <ClInclude Include="..\MFServer\core\MFLuaProfiler.hpp" />
+    <ClInclude Include="..\MFServer\core\MFLuaSeri.h" />
+    <ClInclude Include="..\MFServer\core\MFLuaService.hpp" />
+    <ClInclude Include="..\MFServer\core\MFLuaServiceManager.hpp" />
+    <ClInclude Include="..\MFServer\core\MFLuaShareData.hpp" />
+    <ClInclude Include="..\MFServer\core\MFMacro.h" />
+    <ClInclude Include="..\MFServer\core\MFMsgPack.h" />
+    <ClInclude Include="..\MFServer\core\MFMysqlClient.hpp" />
+    <ClInclude Include="..\MFServer\core\MFMysqlConnectPool.hpp" />
+    <ClInclude Include="..\MFServer\core\MFNetManager.hpp" />
+    <ClInclude Include="..\MFServer\core\MFObjectPool.hpp" />
+    <ClInclude Include="..\MFServer\core\MFpb.h" />
+    <ClInclude Include="..\MFServer\core\MFpbcExport.h" />
+    <ClInclude Include="..\MFServer\core\MFRedisClient.hpp" />
+    <ClInclude Include="..\MFServer\core\MFRedisConnectPool.hpp" />
+    <ClInclude Include="..\MFServer\core\MFSHA1.hpp" />
+    <ClInclude Include="..\MFServer\core\MFSHA256.hpp" />
+    <ClInclude Include="..\MFServer\core\MFSnowflake.hpp" />
+    <ClInclude Include="..\MFServer\core\MFSpinLock.hpp" />
+    <ClInclude Include="..\MFServer\core\MFTcpClient.hpp" />
+    <ClInclude Include="..\MFServer\core\MFTcpServer.hpp" />
+    <ClInclude Include="..\MFServer\core\MFUdpChannel.hpp" />
+    <ClInclude Include="..\MFServer\core\MFUdpChannelManager.hpp" />
+    <ClInclude Include="..\MFServer\core\MFUdpServer.hpp" />
+    <ClInclude Include="..\MFServer\core\MFUtil.hpp" />
+    <ClInclude Include="..\MFServer\core\MFValue.hpp" />
+    <ClInclude Include="..\MFServer\core\MFWebServer.hpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{ef91158d-ce8b-4e8c-80b2-9e1994a4427b}</ProjectGuid>
+    <RootNamespace>server</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\MFServer\3rd;$(MSBuildProjectDirectory)\..\MFServer\3rd\cjson;$(MSBuildProjectDirectory)\..\MFServer\core;$(MSBuildProjectDirectory)\..\MFServer\3rd\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4200;4819;4267;4244;4311;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(MSBuildProjectDirectory)\..\MFServer\winlib\drogon.lib;$(MSBuildProjectDirectory)\..\MFServer\winlib\jsoncpp.lib;$(MSBuildProjectDirectory)\..\MFServer\winlib\lua.lib;$(MSBuildProjectDirectory)\..\MFServer\winlib\trantor.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\MFServer\winlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_NODEBUG;_CONSOLE;NOMINMAX;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\MFServer\3rd;$(MSBuildProjectDirectory)\..\MFServer\3rd\cjson;$(MSBuildProjectDirectory)\..\MFServer\core;$(MSBuildProjectDirectory)\..\MFServer\3rd\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4200;4819;4267;4244;4311;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\..\MFServer\winlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(MSBuildProjectDirectory)\..\MFServer\winlib\drogon.lib;$(MSBuildProjectDirectory)\..\MFServer\winlib\hiredis.lib;$(MSBuildProjectDirectory)\..\MFServer\winlib\jsoncpp.lib;$(MSBuildProjectDirectory)\..\MFServer\winlib\lua54.lib;$(MSBuildProjectDirectory)\..\MFServer\winlib\trantor.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

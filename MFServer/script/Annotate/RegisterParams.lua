@@ -1,0 +1,16 @@
+---@class RegisterParams
+---@field accountId
+---@field showUid
+---@field regCity
+---@field regDeviceId
+---@field regFireBaseId
+---@field regClientVersion
+---@field regLanguage
+---@field regCountry
+---@field regPlatformType
+---@field regServerId
+---@field regTime
+---@field GAID
+---@field mappingState
+---@field isRestart
+---@field name

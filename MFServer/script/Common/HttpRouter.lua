@@ -1,0 +1,3 @@
+HttpRouter = {}
+HttpRouter.login = "login"
+

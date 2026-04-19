@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+
+message ItemInfo {
+  int64 uuid = 1; //道具唯一id
+  int32 itemId = 2; // 道具配置表id
+  int64 num = 3; //数量 最终值
+  int64 vanishTime = 4;//消失时间戳 0为永久
+  int64 cdTime = 5;// 道具的冷却时间 0为无冷却
+}

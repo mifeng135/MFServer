@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+import "extentions/MsgOptions.proto";
+import "extentions/ResourceBase.proto";
+import "extentions/ItemBase.proto";
+
+message WarnPush {
+  option (msgId) = 1;
+  string msg = 1;
+  int32 errorCode = 2;
+  repeated string params = 3;
+}
+
+message LoginReq {
+  option (msgId) = 1001;
+  string token = 1;
+  string clientVersion = 2;
+}
+
+message LoginPush {
+  option (msgId) = 1002;
+  string token = 1;
+  repeated ResourceInfo resourceList = 2;
+  repeated ItemInfo itemList = 3;
+  int64 uid = 8; // 玩家uid
+  int32 seasonId = 30;
+  int64 seasonStartTime = 31;
+  int64 serverOpenTime = 40;
+}
+
+// 心跳
+message HeartBeatReq {
+  option (msgId) = 998;
+  int64 clientTime = 1; // 客户端请求时间戳ms
+  int32 clickNum = 2; // 客户端点击次数（增量）
+}
+
+message HeartBeatResp {
+  option (msgId) = 999;
+  int64 serverTime = 1; // 服务器时间戳ms
+  int64 clientTime = 2; // 客户端请求时间戳ms
+}
+
