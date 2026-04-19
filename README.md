@@ -64,10 +64,9 @@ open MFServer.xcodeproj
 
 ### Windows (Visual Studio)
 
-打开 `server.slnx`（或 `server/server.vcxproj`），按 `x64` 编译。Lua、Drogon、Trantor、jsoncpp 等请自行构建或放入 `MFServer/winlib`（仓库中已提供部分）。
+打开 `server.slnx`。
 
-### 生成 Protobuf（新增 / 修改 `.proto` 后必做）
-
+### 生成 Protobuf（新增 / 修改 `.proto` 后可以通过）
 ```bash
 cd MFServer
 python3 tools/buildProtoMsg.py
