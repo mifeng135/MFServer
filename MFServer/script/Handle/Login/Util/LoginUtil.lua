@@ -47,7 +47,7 @@ function M.login(uid, playerAccount, playerUid, requestParams, fd)
 
     local key = "token:" .. token
     local value = registerParamsJson .. "#" .. requestParamsJson
-    MF.redis.executeSync(RedisConfig.Login, "SET", key, value)
+    MF.redis.executeCoroutine(RedisConfig.Login, "SET", key, value)
     MF.http.httpResponse(fd, retResult)
 end
 

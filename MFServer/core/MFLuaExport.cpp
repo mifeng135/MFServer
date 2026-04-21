@@ -125,10 +125,6 @@ void MFLuaExport::exportMFUtil(sol::state& lua)
         bool ok = MFJsonConfig::instance().loadAllFromDirectory(fullPath, true, err);
         return std::make_tuple(ok, err);
     };
-
-    table["ensureExportHttpRequest"] = [](const sol::this_state& ts) {
-        ensureExportHttpRequest(sol::state_view(ts));
-    };
 }
 
 void MFLuaExport::exportMFApplication(sol::state& lua)
@@ -295,8 +291,8 @@ void MFLuaExport::exportMFRedisPoolManager(sol::state& lua)
         return MFRedisPoolManager::getInstance()->executeAsync(serviceId, key, args, state);
     };
 
-    table["executeSync"] = [](int key, const sol::variadic_args& args, const sol::this_state& state)-> sol::object {
-        return MFRedisPoolManager::getInstance()->executeSync(key, args, state);
+    table["executeSync"] = [](int key, int timeOut, const sol::variadic_args& args, const sol::this_state& state)-> sol::object {
+        return MFRedisPoolManager::getInstance()->executeSync(key, timeOut, args, state);
     };
 }
 
@@ -305,32 +301,32 @@ void MFLuaExport::exportMFMysqlPoolManager(sol::state& lua)
     auto table = lua.create_named_table("MFNativeMysql");
 
     table["queryAsync"] = [](const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolMananger::getInstance()->queryAsync(sql, serviceId, key, state);
+        return MFMysqlPoolManager::getInstance()->queryAsync(sql, serviceId, key, state);
     };
 
     table["queryOneAsync"] = [](const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolMananger::getInstance()->queryOneAsync(sql, serviceId, key, state);
+        return MFMysqlPoolManager::getInstance()->queryOneAsync(sql, serviceId, key, state);
     };
 
     table["executeAsync"] = [](const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolMananger::getInstance()->executeAsync(sql, serviceId, key, state);
+        return MFMysqlPoolManager::getInstance()->executeAsync(sql, serviceId, key, state);
     };
 
     //
     table["beginTransaction"] = [](MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolMananger::getInstance()->beginTransaction(serviceId, key, state);
+        return MFMysqlPoolManager::getInstance()->beginTransaction(serviceId, key, state);
     };
 
     table["executeInTransaction"] = [](size_t transactionId, const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolMananger::getInstance()->executeInTransaction(transactionId, sql, serviceId, key, state);
+        return MFMysqlPoolManager::getInstance()->executeInTransaction(transactionId, sql, serviceId, key, state);
     };
 
     table["commitTransaction"] = [](size_t transactionId, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolMananger::getInstance()->commitTransaction(transactionId, serviceId, key, state);
+        return MFMysqlPoolManager::getInstance()->commitTransaction(transactionId, serviceId, key, state);
     };
 
     table["rollbackTransaction"] = [](size_t transactionId, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolMananger::getInstance()->rollbackTransaction(transactionId, serviceId, key, state);
+        return MFMysqlPoolManager::getInstance()->rollbackTransaction(transactionId, serviceId, key, state);
     };
 }
 
@@ -443,15 +439,5 @@ void MFLuaExport::exportMFProfiler(sol::state& lua, MFLuaProfiler* luaProfiler)
     };
 }
 
-void MFLuaExport::ensureExportHttpRequest(sol::state_view lua)
-{
-    lua.new_usertype<drogon::HttpRequest>("HttpRequest",
-        "setPath", LUA_MEMFN(void, drogon::HttpRequest, setPath, const std::string&),
-        "setMethod", &drogon::HttpRequest::setMethod,
-        "newHttpRequest", &drogon::HttpRequest::newHttpRequest,
-		"addHeader", LUA_MEMFN(void, drogon::HttpRequest, addHeader, std::string, const std::string&),
-        "setBody", LUA_MEMFN(void, drogon::HttpRequest, setBody, const std::string&)
-    );
-}
 
 

@@ -72,8 +72,8 @@ void MFNetManager::createUdpServer(uint32_t configId, MFServiceId_t serviceId) {
 size_t MFNetManager::createHttpClient(const std::string& host, const drogon::HttpRequestPtr& request, MFServiceId_t serviceId) {
     auto client = drogon::HttpClient::newHttpClient(host);
     size_t id = MFUtil::genSessionId();
-    client->sendRequest(request, [client, serviceId, id](drogon::ReqResult result, const drogon::HttpResponsePtr& response) {
-        auto pool = MFApplication::getInstance()->getNetManager()->getWebServer()->getClientMsgPool();
+    client->sendRequest(request, [client, serviceId, id, this](drogon::ReqResult result, const drogon::HttpResponsePtr& response) {
+        auto pool = m_webServer->getClientMsgPool();
         MFHttpClientMessage* message = pool->pop();
         message->setMessageType(LuaMessageTypeHttpClientRsp);
         message->setDst(serviceId);
@@ -159,6 +159,7 @@ std::shared_ptr<MFTcpClient> MFNetManager::getClient(uint32_t configId, const so
     std::shared_ptr<MFTcpClient> client = std::make_shared<MFTcpClient>(m_application);
     client->initClient(ip, port, serviceId, configId, MFNetTypeRPC);
     {
+        //prevent concurrent read and write operations on the same unordered_map
         std::unique_lock ul(m_clientMtx);
         m_clientMap[configId] = client;
     }

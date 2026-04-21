@@ -30,11 +30,23 @@ MFRedisConnectPool::~MFRedisConnectPool() {
     }
 }
 
-MFRedisClient* MFRedisConnectPool::createConnect() {
+void MFRedisConnectPool::createConnect() {
+    if (m_currentPoolSize >= m_maxPoolSize) {
+        return;
+    }
+
     MFRedisClient* client = new MFRedisClient();
-	client->init(m_url, m_port, m_password);
     ++m_currentPoolSize;
-    return client;
+    client->init(m_url, m_port, [this](MFRedisClient* client, bool success) {
+        if (!success) {
+            MFApplication::getInstance()->logInfo("Redis createConnect failed {}:{}", m_url, m_port);
+            --m_currentPoolSize;
+            deleteClient(client);
+            return;
+        }
+        client->lastUsedTime = std::chrono::steady_clock::now();
+        m_redisContextPool.enqueue(client);
+    }, m_password);
 }
 
 void MFRedisConnectPool::init(const std::string& url, int port, const std::string& password, int useDB, int minPoolSize, int maxPoolSize, int maxIdleTime) {
@@ -47,8 +59,7 @@ void MFRedisConnectPool::init(const std::string& url, int port, const std::strin
     m_maxIdleTime = maxIdleTime;
 
     for (int i = 0; i < m_minPoolSize; i++) {
-        MFRedisClient* client = createConnect();
-        m_redisContextPool.enqueue(client);
+        createConnect();
     }
     m_timerId = MFApplication::getInstance()->submitMainTimer([this] {
         MFApplication::getInstance()->submitIo([this]()-> int {
@@ -58,23 +69,32 @@ void MFRedisConnectPool::init(const std::string& url, int port, const std::strin
     });
 }
 
+void MFRedisConnectPool::deleteClient(MFRedisClient* client) {
+    MFApplication::getInstance()->submitIo([this, client]()-> int {
+        delete client;
+        return 1;
+    });
+}
+
 MFRedisClient* MFRedisConnectPool::getConnect() {
     MFRedisClient* connect = nullptr;
-    m_redisContextPool.try_dequeue(connect);
-    if (connect) {
+    if (m_redisContextPool.try_dequeue(connect)) {
         connect->lastUsedTime = std::chrono::steady_clock::now();
         return connect;
     }
-
-    if (m_currentPoolSize >= m_maxPoolSize) {
-        m_redisContextPool.wait_dequeue(connect);
-        connect->lastUsedTime = std::chrono::steady_clock::now();
-        return connect;
-    }
-    return createConnect();
+    createConnect();
+    m_redisContextPool.wait_dequeue(connect);
+    connect->lastUsedTime = std::chrono::steady_clock::now();
+    return connect;
 }
 
 void MFRedisConnectPool::releaseConnect(MFRedisClient* connect) {
+    if (!connect->isIdle()) {
+		--m_currentPoolSize;
+        createConnect();
+        deleteClient(connect);
+        return;
+    }
     m_redisContextPool.enqueue(connect);
 }
 
@@ -182,14 +202,14 @@ size_t MFRedisPoolManager::executeAsync(MFServiceId_t serviceId, int key, const 
     if (nativeLua) {
         return nativeLua->executeAsync(serviceId, args, state);
     }
-    return -1;
+    return 0;
 }
 
-sol::object MFRedisPoolManager::executeSync(int key, const sol::variadic_args& args, const sol::this_state& state)
+sol::object MFRedisPoolManager::executeSync(int key, int timeOut, const sol::variadic_args& args, const sol::this_state& state)
 {
     MFNativeLuaRedis* nativeLua = getNativeLuaRedis(key, state);
     if (nativeLua) {
-        return nativeLua->executeSync(args, state);
+        return nativeLua->executeSync(timeOut, args, state);
     }
     return nullptr;
 }
@@ -210,7 +230,7 @@ size_t MFNativeLuaRedis::executeAsync(MFServiceId_t serviceId, const sol::variad
     MFRedisClient* connection = m_pool->getConnect();
     if (!connection) {
         MFApplication::getInstance()->logInfo("Failed to get Redis connection from pool");
-        return -1;
+        return 0;
     }
 	size_t size = args.size();
     std::vector<std::string> stringArgs;
@@ -228,7 +248,7 @@ size_t MFNativeLuaRedis::executeAsync(MFServiceId_t serviceId, const sol::variad
     return sessionId;
 }
 
-sol::object MFNativeLuaRedis::executeSync(const sol::variadic_args& args, const sol::this_state& state)
+sol::object MFNativeLuaRedis::executeSync(int timeOut, const sol::variadic_args& args, const sol::this_state& state)
 {
     MFRedisClient* connection = m_pool->getConnect();
     if (!connection) {
@@ -243,24 +263,23 @@ sol::object MFNativeLuaRedis::executeSync(const sol::variadic_args& args, const 
         stringArgs.push_back(args[i].as<std::string>());
     }
 
-    std::promise<MFRedisResult> redisPro;
-    connection->execute(stringArgs, 0, 0, [&redisPro](MFRedisResult&& result) {
-        redisPro.set_value(result);
+    auto redisPro = std::make_shared<std::promise<MFRedisResult>>();
+    std::future<MFRedisResult> future = redisPro->get_future();
+    connection->execute(stringArgs, 0, 0, [redisPro, this, connection](MFRedisResult&& result) {
+        redisPro->set_value(std::move(result));
+        m_pool->releaseConnect(connection);
     });
 
-    std::future<MFRedisResult> future = redisPro.get_future();
-    auto status = future.wait_for(std::chrono::seconds(3));//timeout 3 second
+    auto status = future.wait_for(std::chrono::seconds(timeOut));//timeout 3 second
     if (status == std::future_status::ready) {
-        const MFRedisReply& reply = future.get().reply;
+        MFRedisResult res = future.get();
         sol::state_view lua(state);
-        sol::object result = MFUtil::redisReplyToLuaObject(reply, lua);
-        m_pool->releaseConnect(connection);
-        return result;
+        return MFUtil::redisReplyToLuaObject(res.reply, lua);
     }
-    m_pool->releaseConnect(connection);
-    std::string cmd = "";
+    std::string cmd;
     for (const auto& str : stringArgs) {
         cmd.append(str);
+        cmd.push_back(' ');
     }
     MFApplication::getInstance()->logInfo("executeSync timeOut cmd = {}", cmd);
     return sol::lua_nil;

@@ -21,11 +21,12 @@ public:
     MFRedisConnectPool();
     ~MFRedisConnectPool();
 public:
-    MFRedisClient* createConnect();
+    void createConnect();
     MFRedisClient* getConnect();
     void releaseConnect(MFRedisClient* connect);
     void clearExpiredConnect();
     void init(const std::string& url, int port, const std::string& password, int useDB, int minPoolSize, int maxPoolSize, int maxIdleTime);
+    void deleteClient(MFRedisClient* client);
 private:
     MFBlockingQueue<MFRedisClient*>         m_redisContextPool{32};
     std::string                             m_url;
@@ -52,7 +53,7 @@ private:
     MFNativeLuaRedis* getNativeLuaRedis(int key, const sol::this_state& state);
 public:
     size_t executeAsync(MFServiceId_t serviceId, int key, const sol::variadic_args& args, const sol::this_state& state);
-    sol::object executeSync(int key, const sol::variadic_args& args, const sol::this_state& state);
+    sol::object executeSync(int key, int timeOut, const sol::variadic_args& args, const sol::this_state& state);
 private:
     MFFastMap<int, MFNativeLuaRedis*>               m_redisNativePools;
     mutable std::shared_mutex                       m_poolMtx;
@@ -67,7 +68,7 @@ public:
     ~MFNativeLuaRedis();
 public:
     size_t executeAsync(MFServiceId_t serviceId, const sol::variadic_args& args, const sol::this_state& state);
-	sol::object executeSync(const sol::variadic_args& args, const sol::this_state& state);
+	sol::object executeSync(int timeOut, const sol::variadic_args& args, const sol::this_state& state);
 private:
 	void dispatchRedisCommand(MFRedisResult&& result);
 private:

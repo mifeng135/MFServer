@@ -43,16 +43,16 @@ void MFUdpServer::init(const std::string &ip, uint16_t port, MFServiceId_t servi
             return;
         }
         unsigned int conv = MFUtil::readUint32(buf);
-        std::shared_ptr<MFUdpChannel> channel = MFUdpChannelManager::getInstance()->getOrCreateChannel(conv, loop, [this](int conv) {
-            onActive(conv);
+        std::shared_ptr<MFUdpChannel> channel = MFUdpChannelManager::getInstance()->getOrCreateChannel(conv, loop, [this](int convId) {
+            onActive(convId);
         });
 
-        channel->setReceiveCallback([this](int conv, const char* buf, size_t len) {
-			onMessage(conv, buf, len);
+        channel->setReceiveCallback([this](int convId, const char* buffer, size_t length) {
+			onMessage(convId, buffer, length);
         });
 
-        channel->setDisconnectCallback([this](int conv) {
-            onInActive(conv);
+        channel->setDisconnectCallback([this](int convId) {
+            onInActive(convId);
         });
 
         channel->onReceive(std::move(address), udpSocket, buf, len);

@@ -172,7 +172,7 @@ void MFApplication::closeState() {
 void MFApplication::initInstance() {
     MFLuaServiceManager::getInstance();
     MFRedisPoolManager::getInstance();
-    MFMysqlPoolMananger::getInstance();
+    MFMysqlPoolManager::getInstance();
     MFConnectionManager::getInstance();
     MFAnnotationHandle::getInstance();
 	MFUdpChannelManager::getInstance();
@@ -268,7 +268,7 @@ void MFApplication::shutDown() {
     drogon::app().getLoop()->runInLoop([]()->void {
         MFLuaServiceManager::destroyInstance();
         MFRedisPoolManager::destroyInstance();
-        MFMysqlPoolMananger::destroyInstance();
+        MFMysqlPoolManager::destroyInstance();
         MFAnnotationHandle::destroyInstance();
         MFConnectionManager::destroyInstance();
 		MFUdpChannelManager::destroyInstance();

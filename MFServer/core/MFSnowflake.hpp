@@ -1,7 +1,6 @@
 #ifndef MFSnowflake_hpp
 #define MFSnowflake_hpp
 
-#include <cstdint>
 #include <chrono>
 #include <mutex>
 #include <stdexcept>

@@ -223,6 +223,12 @@ public:
     , m_callback(nullptr) {
     }
 
+    void reset() override {
+        MFMessage::reset();
+        m_callback = nullptr;
+        m_pool->push(this);
+    }
+
     void setCallback(std::function<void(MFLuaService*)> fn) {
         m_callback = std::move(fn);
     }

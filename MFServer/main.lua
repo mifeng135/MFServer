@@ -22,4 +22,4 @@ MFUtil.jsonLoad(projectPath .. "/script/JsonConfig")
 MFUtil.preloadSharedTable(projectPath .. "/script/Config")
 
 MFLuaServiceManager.init(MFConfig.scriptWorkCount)
-MFLuaServiceManager.addUniqueService("WebSocketServer")
+MFLuaServiceManager.addUniqueService("LoginServer")

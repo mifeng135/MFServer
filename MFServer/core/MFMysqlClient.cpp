@@ -1,5 +1,6 @@
 #include "MFMysqlClient.hpp"
 
+#include <algorithm>
 #include <charconv>
 
 #include "MFApplication.hpp"
@@ -11,34 +12,38 @@
 
 #include <cstring>
 
-#define COM_QUIT    0x01
 #define COM_QUERY   0x03
-#define COM_PING    0x0E
 
 
 MFMysqlClient::MFMysqlClient()
 : m_state(MFMysqlState::Disconnected)
 , m_packetNumber(0)
 , m_port(3306)
+, m_queryPhase(QueryPhase::Initial)
+, m_columnCount(0)
 , m_eventLoopThread(nullptr) {
 }
 
 MFMysqlClient::~MFMysqlClient() {
     disconnect();
     m_client.reset();
-    m_eventLoopThread->getLoop()->quit();
-    delete m_eventLoopThread;
-    m_eventLoopThread = nullptr;
+    if (m_eventLoopThread) {
+        m_eventLoopThread->getLoop()->quit();
+        delete m_eventLoopThread;
+        m_eventLoopThread = nullptr;
+    }
 }
 
 void MFMysqlClient::init(const std::string& host, uint16_t port,
                          const std::string& user, const std::string& password,
-                         const std::string& database) {
+                         const std::string& database,
+                         ReadyCallback onReady) {
     m_host = host;
     m_port = port;
     m_user = user;
     m_password = password;
     m_database = database;
+    m_onReady = std::move(onReady);
 
     m_eventLoopThread = new trantor::EventLoopThread("MFMysqlClientEventLoop");
     m_eventLoopThread->run();
@@ -53,58 +58,96 @@ void MFMysqlClient::init(const std::string& host, uint16_t port,
     m_client->setMessageCallback([this](const trantor::TcpConnectionPtr& conn, trantor::MsgBuffer* buf) {
         onMessage(conn, buf);
     });
-    
+
+    m_client->setConnectionErrorCallback([this]() {
+        MFApplication::getInstance()->logInfo("MySQL connected fail from {}:{}", m_host, m_port);
+        setState(MFMysqlState::Disconnected);
+    });
+
     m_client->enableRetry();
-    m_state = MFMysqlState::Connecting;
+    setState(MFMysqlState::Connecting);
     m_client->connect();
 }
 
 void MFMysqlClient::onConnect(const trantor::TcpConnectionPtr& conn) {
     m_connection = conn;
     m_connection->setTcpNoDelay(true);
-    m_state = MFMysqlState::Handshaking;
     m_packetNumber = 0;
+    setState(MFMysqlState::Handshaking);
 }
 
 void MFMysqlClient::onDisconnect(const trantor::TcpConnectionPtr& conn) {
     MFApplication::getInstance()->logInfo("MySQL disconnected from database {}:{}:{}", m_host, m_port, m_database);
-    m_connection = nullptr;
-    m_state = MFMysqlState::Disconnected;
-    
-    while (!m_queryQueue.empty()) {
-        MFMysqlQuery query = m_queryQueue.front();
-        m_queryQueue.pop();
-        
-        MFMysqlResult result(query.sessionId, query.serviceId);
-        result.success = false;
-        result.error = "Connection lost";
-        query.fn(std::move(result));
+    setState(MFMysqlState::Disconnected);
+}
+
+void MFMysqlClient::setState(MFMysqlState newState) {
+    if (m_state == newState) {
+        return;
+    }
+    m_state = newState;
+    switch (newState) {
+        case MFMysqlState::Connected:
+            fireReady(true);
+            break;
+        case MFMysqlState::Disconnected:
+            m_connection = nullptr;
+            failInflight("Connection closed");
+            fireReady(false);
+            break;
+        default:
+            break;
     }
 }
+
+void MFMysqlClient::fireReady(bool success) {
+    if (!m_onReady) {
+        return;
+    }
+    ReadyCallback cb = std::move(m_onReady);
+    m_onReady = nullptr;
+    cb(this, success);
+}
+
+void MFMysqlClient::failInflight(const char* reason) {
+    if (!m_inflight) {
+        return;
+    }
+    MFMysqlQuery query = std::move(*m_inflight);
+    m_inflight.reset();
+    m_pendingResult.reset();
+    m_queryPhase = QueryPhase::Initial;
+    MFMysqlResult result(query.sessionId, query.serviceId);
+    result.success = false;
+    result.error = reason;
+    query.fn(std::move(result));
+}
+
 void MFMysqlClient::onMessage(const trantor::TcpConnectionPtr& conn, trantor::MsgBuffer* buffer) {
     while (buffer->readableBytes() >= 4) {
         try {
             size_t bytesBefore = buffer->readableBytes();
+            bool progressed = false;
             switch (m_state) {
                 case MFMysqlState::Handshaking:
                     handleHandshake(buffer);
+                    progressed = buffer->readableBytes() != bytesBefore;
                     break;
                 case MFMysqlState::Authenticating:
                     handleAuthResponse(buffer);
+                    progressed = buffer->readableBytes() != bytesBefore;
                     break;
                 case MFMysqlState::Querying:
-                    handleQueryResponse(buffer);
+                    progressed = handleQueryResponse(buffer);
                     break;
                 case MFMysqlState::Connected:
-                    if (!m_queryQueue.empty()) {
-                        m_state = MFMysqlState::Querying;
-                        continue;
-                    }
+                    MFApplication::getInstance()->logInfo("MySQL unexpected data while idle, disconnect {}:{}", m_host, m_port);
+                    disconnect();
                     return;
                 default:
                     return;
             }
-            if (buffer->readableBytes() == bytesBefore) {
+            if (!progressed) {
                 break;
             }
         } catch (const std::exception& e) {
@@ -115,84 +158,142 @@ void MFMysqlClient::onMessage(const trantor::TcpConnectionPtr& conn, trantor::Ms
     }
 }
 
+bool MFMysqlClient::readLogicalPacket(trantor::MsgBuffer* buffer, std::vector<uint8_t>& payload) {
+    payload.clear();
+    size_t readable = buffer->readableBytes();
+    const uint8_t* base = reinterpret_cast<const uint8_t*>(buffer->peek());
+    size_t scan = 0;
+    uint8_t lastSeq = 0;
+    for (;;) {
+        if (readable < scan + 4) {
+            return false;
+        }
+        uint32_t len = base[scan] | (base[scan + 1] << 8) | (base[scan + 2] << 16);
+        lastSeq = base[scan + 3];
+        if (readable < scan + 4 + len) {
+            return false;
+        }
+        size_t before = payload.size();
+        payload.resize(before + len);
+        if (len > 0) {
+            memcpy(payload.data() + before, base + scan + 4, len);
+        }
+        scan += 4 + len;
+        if (len < 0xFFFFFF) {
+            break;
+        }
+    }
+    buffer->retrieve(scan);
+    m_packetNumber = lastSeq;
+    return true;
+}
+
+bool MFMysqlClient::isEofPacket(const std::vector<uint8_t>& packet) {
+    return !packet.empty() && packet[0] == 0xFE && packet.size() < 9;
+}
+
 void MFMysqlClient::handleHandshake(trantor::MsgBuffer* buffer) {
-    if (buffer->readableBytes() < 4) {
+    std::vector<uint8_t> packet;
+    if (!readLogicalPacket(buffer, packet)) {
         return;
     }
-    
-    const uint8_t* header = reinterpret_cast<const uint8_t*>(buffer->peek());
-    uint32_t len = header[0] | header[1] << 8 | header[2] << 16;
-    
-    if (buffer->readableBytes() < len + 4) {
+    if (packet.empty()) {
+        MFApplication::getInstance()->logInfo("MySQL handshake empty packet");
+        disconnect();
         return;
     }
-    
-    buffer->retrieve(4);
-    m_packetNumber = header[3];
-    
-    const uint8_t* data = reinterpret_cast<const uint8_t*>(buffer->peek());
+    const uint8_t* data = packet.data();
+    const uint8_t* end = data + packet.size();
     const uint8_t* ptr = data;
+    if (ptr >= end) {
+        disconnect(); 
+        return; 
+    }
     ptr++;
-    while (*ptr != 0 && ptr - data < static_cast<int>(len)) {
+    while (ptr < end && *ptr != 0) {
         ptr++;
     }
+    if (ptr >= end) {
+        disconnect();
+        return;
+    }
     ptr++;
+    if (end - ptr < 4 + 8 + 1) {
+        disconnect();
+        return;
+    }
     ptr += 4;
     m_scramble.assign(reinterpret_cast<const char*>(ptr), 8);
     ptr += 8;
-    ptr += 1 + 2 + 1 + 2 + 2 + 1 + 10;
-    if (ptr - data < static_cast<int>(len)) {
-        const uint8_t* scramble_start = ptr;
-        size_t remaining = std::min(static_cast<size_t>(13), static_cast<size_t>(len - (ptr - data)));
-        size_t scramble_len = 0;
-        
-        while (scramble_len < remaining && *ptr != 0) {
-            scramble_len++;
+    ptr += 1; // filler
+    if (end - ptr < 1 + 2 + 2 + 1 + 10) {
+        m_authPlugin = "mysql_native_password";
+        sendAuthPacket();
+        setState(MFMysqlState::Authenticating);
+        return;
+    }
+    ptr += 1 + 2 + 2 + 1 + 10;
+
+    if (ptr < end) {
+        const uint8_t* scrambleStart = ptr;
+        size_t remaining = std::min<size_t>(13, static_cast<size_t>(end - ptr));
+        size_t scrambleLen = 0;
+        while (scrambleLen < remaining && ptr < end && *ptr != 0) {
+            scrambleLen++;
             ptr++;
         }
-        m_scramble.append(reinterpret_cast<const char*>(scramble_start), scramble_len);
-        if (*ptr == 0) {
+        m_scramble.append(reinterpret_cast<const char*>(scrambleStart), scrambleLen);
+        if (ptr < end && *ptr == 0) {
             ptr++;
         }
     }
-    if (ptr - data < static_cast<int>(len)) {
-        m_authPlugin = readNullStr(ptr);
+    if (ptr < end) {
+        const char* start = reinterpret_cast<const char*>(ptr);
+        const uint8_t* nul = ptr;
+        while (nul < end && *nul != 0) {
+            nul++;
+        }
+        m_authPlugin.assign(start, reinterpret_cast<const char*>(nul) - start);
+        ptr = (nul < end) ? nul + 1 : end;
     } else {
         m_authPlugin = "mysql_native_password";
     }
-    
-    buffer->retrieve(len);
+
     sendAuthPacket();
-    m_state = MFMysqlState::Authenticating;
+    setState(MFMysqlState::Authenticating);
 }
 
 void MFMysqlClient::handleAuthResponse(trantor::MsgBuffer* buffer) {
-    if (buffer->readableBytes() < 4) {
+    std::vector<uint8_t> packet;
+    if (!readLogicalPacket(buffer, packet)) {
         return;
     }
-
-    std::vector<uint8_t> packet = readPacket(buffer);
     if (packet.empty()) {
+        MFApplication::getInstance()->logInfo("MySQL auth response empty packet");
+        disconnect();
         return;
     }
     uint8_t flag = packet[0];
     if (flag == 0x00) {
         MFApplication::getInstance()->logInfo("MySQL auth OK ip = {}, port = {}, database = {}", m_host, m_port, m_database);
-        m_state = MFMysqlState::Connected;
-        processPendingQueries();
+        setState(MFMysqlState::Connected);
     } else if (flag == 0xFE) {
         handleAuthSwitch(packet);
     } else if (flag == 0x01) {
+        // caching_sha2_password 的进度包，忽略（后续 OK 包再切状态）
     } else if (flag == 0xFF) {
         const uint8_t* ptr = packet.data() + 1;
-        ptr += 2;
-        if (*ptr == '#') {
-            ptr += 6;
+        const uint8_t* end = packet.data() + packet.size();
+        if (end - ptr >= 2) {
+            ptr += 2;
+            if (ptr < end && *ptr == '#' && end - ptr >= 6) {
+                ptr += 6;
+            }
         }
-        MFApplication::getInstance()->logInfo("MySQL auth failed: {}", std::string(reinterpret_cast<const char*>(ptr), packet.data() + packet.size() - ptr));
+        MFApplication::getInstance()->logInfo("MySQL auth failed: {}",std::string(reinterpret_cast<const char*>(ptr), end - ptr));
         disconnect();
     } else {
-        MFApplication::getInstance()->logInfo("MySQL auth unexpected packet: 0x{:02X}", packet[0]);
+        MFApplication::getInstance()->logInfo("MySQL auth unexpected packet: 0x{:02X}", flag);
         disconnect();
     }
 }
@@ -206,7 +307,6 @@ void MFMysqlClient::handleAuthSwitch(const std::vector<uint8_t>& packet) {
     }
     m_scramble.assign(reinterpret_cast<const char*>(ptr), scrambleLen);
     
-    MFApplication::getInstance()->logInfo("MySQL auth switch to: {}, scramble length: {}", newPlugin, m_scramble.size());
     if (newPlugin.empty() && m_authPlugin == "caching_sha2_password") {
         if (packet.size() > 1) {
             uint8_t flag = packet[1];
@@ -245,232 +345,167 @@ void MFMysqlClient::handleAuthSwitch(const std::vector<uint8_t>& packet) {
     sendPacket(authPacket);
 }
 
-void MFMysqlClient::handleQueryResponse(trantor::MsgBuffer* buffer) {
-    if (buffer->readableBytes() < 4) {
-        return;
-    }
-    const uint8_t* header = reinterpret_cast<const uint8_t*>(buffer->peek());
-    uint32_t len = header[0] | header[1] << 8 | header[2] << 16;
-
-    if (buffer->readableBytes() < len + 4) {
-        return;
-    }
-    uint8_t firstByte = header[4];
-
-    if (m_queryQueue.empty()) {
-        MFApplication::getInstance()->logInfo("MySQL received response but query queue is empty");
-        return;
-    }
-
-    MFMysqlQuery currentQuery = m_queryQueue.front();
-    MFMysqlResult result(currentQuery.sessionId, currentQuery.serviceId);
-
-    if (firstByte == 0x00) {
-        m_queryQueue.pop();
-        auto packet = readPacket(buffer);
-        parseOkPacket(packet, result);
-        currentQuery.fn(std::move(result));
-        m_state = MFMysqlState::Connected;
-        processPendingQueries();
-        return;
-    }
-    if (firstByte == 0xFF) {
-        m_queryQueue.pop();
-        auto packet = readPacket(buffer);
-        parseErrorPacket(packet, result);
-        currentQuery.fn(std::move(result));
-        m_state = MFMysqlState::Connected;
-        processPendingQueries();
-        return;
-    }
-    
-    const uint8_t* payload = reinterpret_cast<const uint8_t*>(buffer->peek()) + 4;
-    const uint8_t* ptr = payload;
-    uint64_t colCount = readLengthEncodedInt(ptr);
-    size_t totalBytes = computeResultSetLength(buffer, colCount);
-    if (totalBytes == 0) {
-        return;
-    }
-    std::vector<uint8_t> block(totalBytes);
-    memcpy(block.data(), buffer->peek(), totalBytes);
-    buffer->retrieve(totalBytes);
-    m_queryQueue.pop();
-    parseResultSetFromBlock(block.data(), totalBytes, colCount, result);
-    currentQuery.fn(std::move(result));
-    m_state = MFMysqlState::Connected;
-    processPendingQueries();
-}
-
-void MFMysqlClient::handlePingResponse(trantor::MsgBuffer* buffer) {
-    if (buffer->readableBytes() < 4) {
-        return;
-    }
-    const uint8_t* header = reinterpret_cast<const uint8_t*>(buffer->peek());
-    uint32_t len = header[0] | header[1] << 8 | header[2] << 16;
-
-    if (buffer->readableBytes() < len + 4) {
-        return;
-    }
-
-    uint8_t firstByte = *reinterpret_cast<const uint8_t*>(buffer->peek() + 4);
-    buffer->retrieve(4 + len);
-    if (firstByte == 0x00) {
-        m_state = MFMysqlState::Connected;
-        processPendingQueries();
-    } else {
-        MFApplication::getInstance()->logInfo("MySQL ping response unexpected packet: 0x{:02X}", firstByte);
-    }
-}
-
-std::vector<uint8_t> MFMysqlClient::readPacket(trantor::MsgBuffer* buffer) {
-    if (buffer->readableBytes() < 4) {
-        return {};
-    }
-    const uint8_t* header = reinterpret_cast<const uint8_t*>(buffer->peek());
-    uint32_t len = header[0] | header[1] << 8 | header[2] << 16;
-    m_packetNumber = header[3];
-    
-    if (buffer->readableBytes() < len + 4) {
-        return {};
-    }
-    
-    buffer->retrieve(4);
-    
-    std::vector<uint8_t> packet(len);
-    memcpy(packet.data(), buffer->peek(), len);
-    buffer->retrieve(len);
-    
-    return packet;
-}
-
-size_t MFMysqlClient::computeResultSetLength(trantor::MsgBuffer* buffer, uint64_t columnCount) {
-    size_t readable = buffer->readableBytes();
-    if (readable < 4) {
-        return 0;
-    }
-    const uint8_t* p = reinterpret_cast<const uint8_t*>(buffer->peek());
-    uint32_t len0 = p[0] | (p[1] << 8) | (p[2] << 16);
-    size_t offset = 4 + len0;
-    if (readable < offset) {
-        return 0;
-    } 
-    for (uint64_t i = 0; i < columnCount; i++) {
-        if (readable < offset + 4) {
-            return 0;
-        } 
-        uint32_t len = p[offset] | p[offset + 1] << 8 | p[offset + 2] << 16;
-        offset += 4 + len;
-        if (readable < offset) {
-            return 0;
-        } 
-    }
-    if (readable < offset + 4) {
-        return 0;
-    } 
-    uint32_t lenEof = p[offset] | (p[offset + 1] << 8) | (p[offset + 2] << 16);
-    offset += 4 + lenEof;
-    if (readable < offset) { 
-        return 0; 
-    }
-    for (;;) {
-        if (readable < offset + 4) {
-            return 0;
-        } 
-        uint32_t len = p[offset] | (p[offset + 1] << 8) | (p[offset + 2] << 16);
-        if (readable < offset + 4 + len) {
-            return 0;
-        } 
-        if (len < 9 && p[offset + 4] == 0xFE) {
-            return offset + 4 + len;
-        } 
-        offset += 4 + len;
-    }
-}
-
-static bool getNextPacketFromBlock(const uint8_t*& ptr, const uint8_t* end, std::vector<uint8_t>& out) {
-    if (end - ptr < 4) {
+bool MFMysqlClient::handleQueryResponse(trantor::MsgBuffer* buffer) {
+    if (!m_inflight) {
+        MFApplication::getInstance()->logInfo("MySQL received response but no inflight query, disconnect");
+        disconnect();
         return false;
     }
-    uint32_t len = ptr[0] | ptr[1] << 8 | ptr[2] << 16;
-    if (static_cast<size_t>(end - ptr) < 4 + len) {
+    std::vector<uint8_t> packet;
+    if (!readLogicalPacket(buffer, packet)) {
         return false;
     }
-    out.assign(ptr + 4, ptr + 4 + len);
-    ptr += 4 + len;
+    if (packet.empty()) {
+        MFApplication::getInstance()->logInfo("MySQL query response empty packet");
+        disconnect();
+        return false;
+    }
+
+    if (!m_pendingResult) {
+        m_pendingResult.emplace(m_inflight->sessionId, m_inflight->serviceId);
+        m_queryPhase = QueryPhase::Initial;
+        m_columnCount = 0;
+    }
+    MFMysqlResult& result = *m_pendingResult;
+    uint8_t first = packet[0];
+
+    switch (m_queryPhase) {
+        case QueryPhase::Initial: {
+            if (first == 0x00) {
+                parseOkPacket(packet, result);
+                completeQuery();
+                return true;
+            }
+            if (first == 0xFF) {
+                parseErrorPacket(packet, result);
+                completeQuery();
+                return true;
+            }
+            const uint8_t* p = packet.data();
+            m_columnCount = readLengthEncodedInt(p);
+            result.columns.reserve(m_columnCount);
+            m_queryPhase = QueryPhase::Columns;
+            return true;
+        }
+        case QueryPhase::Columns: {
+            if (first == 0xFF) {
+                parseErrorPacket(packet, result);
+                completeQuery();
+                return true;
+            }
+            MFMysqlColumn col;
+            if (!parseColumnDefinition(packet, col)) {
+                result.success = false;
+                result.error = "parse column definition failed";
+                completeQuery();
+                return true;
+            }
+            result.columns.emplace_back(std::move(col));
+            if (result.columns.size() >= m_columnCount) {
+                m_queryPhase = QueryPhase::ColumnsEof;
+            }
+            return true;
+        }
+        case QueryPhase::ColumnsEof: {
+            if (first == 0xFF) {
+                parseErrorPacket(packet, result);
+                completeQuery();
+                return true;
+            }
+            if (!isEofPacket(packet)) {
+                result.success = false;
+                result.error = "unexpected packet type after column definitions, EOF expected";
+                completeQuery();
+                return true;
+            }
+            m_queryPhase = QueryPhase::Rows;
+            return true;
+        }
+        case QueryPhase::Rows: {
+            if (first == 0xFF) {
+                parseErrorPacket(packet, result);
+                completeQuery();
+                return true;
+            }
+            if (isEofPacket(packet)) {
+                result.success = true;
+                completeQuery();
+                return true;
+            }
+            std::vector<MFValue> row;
+            if (!parseRow(packet, m_columnCount, row)) {
+                result.success = false;
+                result.error = "parse row failed";
+                completeQuery();
+                return true;
+            }
+            result.rows.emplace_back(std::move(row));
+            return true;
+        }
+    }
     return true;
 }
 
-void MFMysqlClient::parseResultSetFromBlock(const uint8_t* block, size_t blockSize, uint64_t columnCount, MFMysqlResult& result) {
-    const uint8_t* ptr = block;
-    const uint8_t* end = block + blockSize;
-    std::vector<uint8_t> packet;
-    if (!getNextPacketFromBlock(ptr, end, packet)) {
-        return;
-    } 
-    result.columns.reserve(columnCount);
+void MFMysqlClient::completeQuery() {
+    MFMysqlQuery query = std::move(*m_inflight);
+    m_inflight.reset();
+    std::optional<MFMysqlResult> pending = std::move(m_pendingResult);
+    m_pendingResult.reset();
+    m_queryPhase = QueryPhase::Initial;
+    m_columnCount = 0;
+    setState(MFMysqlState::Connected);
+    query.fn(std::move(*pending));
+}
+
+bool MFMysqlClient::parseColumnDefinition(const std::vector<uint8_t>& packet, MFMysqlColumn& col) {
+    if (packet.empty()) {
+        return false;
+    }
+    const uint8_t* p = packet.data();
+    const uint8_t* end = p + packet.size();
+    for (int i = 0; i < 4; i++) {
+        if (p >= end) {
+            return false;
+        }
+        skipLengthEncodedStr(p);
+    }
+    if (p >= end) {
+        return false;
+    }
+    col.name = readLengthEncodedStr(p);
+    if (p >= end) {
+        return false;
+    }
+    skipLengthEncodedStr(p); // org_name
+    if (end - p < 10) {
+        return false;
+    }
+    p += 7;
+    col.type = static_cast<MFMysqlFieldType>(*p++);
+    col.flags = static_cast<uint16_t>(p[0] | (p[1] << 8));
+    return true;
+}
+
+bool MFMysqlClient::parseRow(const std::vector<uint8_t>& packet, uint64_t columnCount, std::vector<MFValue>& row) {
+    row.reserve(columnCount);
+    const uint8_t* p = packet.data();
+    const uint8_t* end = p + packet.size();
     for (uint64_t i = 0; i < columnCount; i++) {
-        if (!getNextPacketFromBlock(ptr, end, packet)) {
-            result.error = "Failed to read column";
-            return;
+        if (p >= end) {
+            return false;
         }
-        uint8_t first = packet[0];
-        if (first == 0xFF) {
-            parseErrorPacket(packet, result);
-            return;
+        if (*p == 0xFB) {
+            row.emplace_back(MFValue());
+            p++;
+            continue;
         }
-        if (first == 0x00) {
-            result.success = false;
-            result.error = "unexpected OK packet in column definitions";
-            return;
+        if (i >= m_pendingResult->columns.size()) {
+            return false;
         }
-        if (first == 0xFE && packet.size() >= 5 && packet.size() < 9) {
-            result.success = false;
-            result.error = "unexpected EOF in column definitions";
-            return;
-        }
-        const uint8_t* p = packet.data();
-        skipLengthEncodedStr(p);
-        skipLengthEncodedStr(p);
-        skipLengthEncodedStr(p);
-        skipLengthEncodedStr(p);
-        MFMysqlColumn col;
-        col.name = readLengthEncodedStr(p);
-        skipLengthEncodedStr(p);
-        p += 7;
-        col.type = static_cast<MFMysqlFieldType>(*p++);
-        col.flags = p[0] | (p[1] << 8);
-        p += 2;
-        p += 3;
-        result.columns.emplace_back(std::move(col));
+        const MFMysqlColumn& column = m_pendingResult->columns[i];
+        row.emplace_back(parseValue(readLengthEncodedStr(p), column.type, column.flags));
     }
-    if (!getNextPacketFromBlock(ptr, end, packet)) {
-        result.error = "Failed to read EOF after column definitions";
-        return;
-    }
-    if (packet[0] != 0xFE || packet.size() >= 9) {
-        result.success = false;
-        result.error = "unexpected packet type after column definitions, EOF expected";
-        return;
-    }
-    while (getNextPacketFromBlock(ptr, end, packet)) {
-        if (packet[0] == 0xFE && packet.size() < 9) {
-            break;
-        }
-        std::vector<MFValue> rowData;
-        rowData.reserve(columnCount);
-        const uint8_t* p = packet.data();
-        for (size_t i = 0; i < columnCount; i++) {
-            if (*p == 0xFB) {
-                rowData.emplace_back(MFValue());
-                p++;
-            } else {
-                const MFMysqlColumn& column = result.columns[i];
-                rowData.emplace_back(parseValue(readLengthEncodedStr(p), column.type, column.flags));
-            }
-        }
-        result.rows.emplace_back(std::move(rowData));
-    }
-    result.success = true;
+    return true;
 }
 
 void MFMysqlClient::sendPacket(const std::vector<uint8_t>& data) {
@@ -551,13 +586,6 @@ void MFMysqlClient::sendQueryPacket(const std::string& sql) {
     sendPacket(packet);
 }
 
-void MFMysqlClient::sendPingPacket() {
-    m_packetNumber = 0;
-    std::vector<uint8_t> packet;
-    packet.push_back(COM_PING);
-    sendPacket(packet);
-}
-
 std::string MFMysqlClient::mysqlPassword(const std::string& password, const std::string& scramble) {
     // SHA1(password) XOR SHA1(scramble + SHA1(SHA1(password)))
     std::string hash1 = MFSHA1::hash(password);
@@ -595,86 +623,10 @@ void MFMysqlClient::parseErrorPacket(const std::vector<uint8_t>& packet, MFMysql
     result.success = false;
     const uint8_t* ptr = packet.data() + 1;
     ptr += 2; // error code
-    
     if (*ptr == '#') {
         ptr += 6; // SQL state
     }
     result.error = std::string(reinterpret_cast<const char*>(ptr), packet.data() + packet.size() - ptr);
-}
-
-void MFMysqlClient::parseResultSet(trantor::MsgBuffer* buffer, uint64_t columnCount, MFMysqlResult& result) {
-    result.columns.reserve(columnCount);
-    for (uint64_t i = 0; i < columnCount; i++) {
-        auto packet = readPacket(buffer);
-        if (packet.empty()) {
-            result.error = "Failed to read column";
-            return;
-        }
-        uint8_t first = packet[0];
-        if (first == 0xFF) {
-            parseErrorPacket(packet, result);
-            return;
-        }
-        if (first == 0x00) {
-            result.success = false;
-            result.error = "unexpected OK packet in column definitions";
-            return;
-        }
-        if (first == 0xFE && packet.size() >= 5 && packet.size() < 9) {
-            result.success = false;
-            result.error = "unexpected EOF in column definitions";
-            return;
-        }
-        const uint8_t* ptr = packet.data();
-        skipLengthEncodedStr(ptr);  // catalog
-        skipLengthEncodedStr(ptr);  // schema
-        skipLengthEncodedStr(ptr);  // table
-        skipLengthEncodedStr(ptr);  // org_table
-        MFMysqlColumn col;
-        col.name = readLengthEncodedStr(ptr);
-        skipLengthEncodedStr(ptr);  // org_name
-        ptr += 7;
-        col.type = static_cast<MFMysqlFieldType>(*ptr++);
-        col.flags = ptr[0] | (ptr[1] << 8);
-        ptr += 2;
-        ptr += 3;
-        result.columns.emplace_back(std::move(col));
-    }
-    auto eofPacket = readPacket(buffer);
-    if (eofPacket.empty()) {
-        result.error = "Failed to read EOF after column definitions";
-        return;
-    }
-    if (eofPacket[0] != 0xFE || eofPacket.size() >= 9) {
-        result.success = false;
-        result.error = "unexpected packet type after column definitions, EOF expected";
-        return;
-    }
-
-    while (true) {
-        auto packet = readPacket(buffer);
-        if (packet.empty()) {
-            result.error = "Failed to read row";
-            return;
-        }
-        if (packet[0] == 0xFE && packet.size() < 9) {
-            break;
-        }
-        std::vector<MFValue> rowData;
-        rowData.reserve(columnCount);
-        const uint8_t* ptr = packet.data();
-        for (size_t i = 0; i < columnCount; i++) {
-            if (*ptr == 0xFB) {
-                rowData.emplace_back(MFValue());
-                ptr++;
-            } else {
-                const MFMysqlColumn& column = result.columns[i];
-                rowData.emplace_back(parseValue(readLengthEncodedStr(ptr), column.type, column.flags));
-            }
-        }
-        result.rows.emplace_back(std::move(rowData));
-    }
-    result.success = true;
 }
 
 MFValue MFMysqlClient::parseValue(std::string&& data, MFMysqlFieldType mysqlType, uint16_t flags) {
@@ -781,20 +733,27 @@ std::string MFMysqlClient::readNullStr(const uint8_t*& ptr) {
 
 void MFMysqlClient::execute(const std::string& sql, MFServiceId_t serviceId, size_t sessionId, const std::function<void(MFMysqlResult&& result)> &fn) {
     m_eventLoopThread->getLoop()->runInLoop([this, sql, serviceId, sessionId, fn] {
-        m_queryQueue.push(MFMysqlQuery(std::move(sql), sessionId, serviceId, std::move(fn)));
-        if (m_state == MFMysqlState::Connected) {
-            processPendingQueries();
+        if (m_state != MFMysqlState::Connected) {
+            MFMysqlResult result(sessionId, serviceId);
+            result.success = false;
+            result.error = "MySQL connection not ready";
+            fn(std::move(result));
+            return;
         }
+        if (m_inflight) {
+            MFMysqlResult result(sessionId, serviceId);
+            result.success = false;
+            result.error = "MySQL connection busy";
+            fn(std::move(result));
+            return;
+        }
+        m_inflight.emplace(sql, sessionId, serviceId, fn);
+        m_pendingResult.reset();
+        m_queryPhase = QueryPhase::Initial;
+        m_columnCount = 0;
+        setState(MFMysqlState::Querying);
+        sendQueryPacket(sql);
     });
-}
-
-void MFMysqlClient::processPendingQueries() {
-    if (m_queryQueue.empty()) {
-        return;
-    }
-    m_state = MFMysqlState::Querying;
-    const MFMysqlQuery& query = m_queryQueue.front();
-    sendQueryPacket(query.sql);
 }
 
 
@@ -802,11 +761,6 @@ void MFMysqlClient::disconnect() {
     if (!m_client) {
         return;
     }
-    if (!m_connection) {
-        return;
-    }
-    std::vector<uint8_t> quit = { COM_QUIT };
-    sendPacket(quit);
     m_client->disconnect();
-    m_state = MFMysqlState::Disconnected;
+    setState(MFMysqlState::Disconnected);
 }

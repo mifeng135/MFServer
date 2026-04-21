@@ -1,7 +1,6 @@
 #include "MFWebServer.hpp"
 #include "MFApplication.hpp"
 #include "MFNetManager.hpp"
-#include "MFLuaService.hpp"
 #include "MFLuaServiceManager.hpp"
 #include "MFUtil.hpp"
 #include "MFLuaMessage.hpp"
@@ -17,8 +16,10 @@ MFWebSocketServer::~MFWebSocketServer() {
     delete m_messagePool;
 }
 
-void MFWebSocketServer::handleNewMessage(const drogon::WebSocketConnectionPtr& ptr, std::string&& msg, const drogon::WebSocketMessageType& type)
-{
+void MFWebSocketServer::handleNewMessage(const drogon::WebSocketConnectionPtr& ptr, std::string&& msg, const drogon::WebSocketMessageType& type) {
+	if (type == drogon::WebSocketMessageType::Close || type == drogon::WebSocketMessageType::Pong) {
+        return;
+    }
     size_t fd = ptr->getContext<WebContext>()->getConnectId();
     MFSocketMessage* message = m_messagePool->pop();
     message->setPool(m_messagePool);

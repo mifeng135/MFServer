@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <queue>
+#include <optional>
 #include <functional>
 #include <memory>
 
@@ -19,7 +19,6 @@ enum class MFRedisState {
     Connecting,
     Authenticating,
     Connected,
-    Commanding,
 };
 
 struct MFRedisReply {
@@ -96,34 +95,39 @@ public:
 
 class MFRedisClient {
 public:
+    using ReadyCallback = std::function<void(MFRedisClient*, bool success)>;
+public:
     MFRedisClient();
     ~MFRedisClient();
 public:
-    void init(const std::string& host, uint16_t port, const std::string& password = "");
-    void execute(const std::vector<std::string>& args, MFServiceId_t serviceId, size_t sessionId, const std::function<void(MFRedisResult&&)>& fn);
+    void init(const std::string& host, uint16_t port, ReadyCallback onReady, const std::string& password = "");
+    void execute(std::vector<std::string> args, MFServiceId_t serviceId, size_t sessionId, const std::function<void(MFRedisResult&&)>& fn);
     void disconnect();
     MFRedisState getState() const { return m_state; }
+    bool isIdle() const { return m_state == MFRedisState::Connected && !m_inflight; }
 private:
     void onConnect(const trantor::TcpConnectionPtr& conn);
     void onDisconnect(const trantor::TcpConnectionPtr& conn);
     void onMessage(const trantor::TcpConnectionPtr& conn, trantor::MsgBuffer* buffer);
+    void setState(MFRedisState newState);
+    void fireReady(bool success);
+    void failInflight(const char* reason);
 
     void sendCommand(const std::vector<std::string>& args);
-    void processPendingCommands();
-
-    bool parseReply(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseSimpleString(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseError(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseInteger(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseBulkString(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseArray(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseNil(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseBool(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseDouble(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseVerbatim(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseBignum(trantor::MsgBuffer* buffer, MFRedisReply& out);
-    bool parseArrayLike(trantor::MsgBuffer* buffer, MFRedisReply& out, int multiplier);
-    bool readLine(trantor::MsgBuffer* buffer, const char*& linePtr, size_t& lineLen);
+private:
+    bool parseReply(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseSimpleString(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseError(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseInteger(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseBulkString(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseArray(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseNil(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseBool(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseDouble(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseVerbatim(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseBignum(const char* p, size_t n, MFRedisReply& out, size_t& consumed);
+    bool parseArrayLike(const char* p, size_t n, MFRedisReply& out, size_t& consumed, int multiplier);
+    static bool findCrLf(const char* p, size_t n, size_t& lineLen);
     void setProtocolError(MFRedisReply& out, const char* msg);
     void setProtocolErrorByte(MFRedisReply& out, char byte);
 
@@ -139,7 +143,8 @@ private:
     uint16_t                                m_port;
 
     MFRedisState                            m_state;
-    std::queue<MFRedisCommand>              m_commandQueue;
+    std::optional<MFRedisCommand>           m_inflight;
+    ReadyCallback                           m_onReady;
     trantor::EventLoopThread*               m_eventLoopThread;
 };
 

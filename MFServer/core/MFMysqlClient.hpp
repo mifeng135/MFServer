@@ -3,7 +3,9 @@
 
 #include <string>
 #include <vector>
-#include <queue>
+#include <optional>
+#include <functional>
+#include <memory>
 
 #include "trantor/net/TcpClient.h"
 #include "trantor/net/EventLoopThread.h"
@@ -14,7 +16,6 @@
 class MFApplication;
 class MFMysqlMessage;
 
-// MySQL 状态
 enum class MFMysqlState {
     Disconnected,
     Connecting,
@@ -22,10 +23,8 @@ enum class MFMysqlState {
     Authenticating,
     Connected,
     Querying,
-    Ping,
 };
 
-// MySQL 字段类型
 enum class MFMysqlFieldType : uint8_t {
     DECIMAL = 0x00,
     TINY = 0x01,
@@ -99,83 +98,86 @@ public:
     MFServiceId_t serviceId;
     std::function<void(MFMysqlResult&& result)> fn;
 };
-//所有的信息处理都是再m_eventLoopThread 这个线程中进行的
+
 class MFMysqlClient {
+public:
+    using ReadyCallback = std::function<void(MFMysqlClient*, bool success)>;
+private:
+    enum class QueryPhase : uint8_t {
+        Initial,        // 等待第一个响应包（OK / ERR / colCount）
+        Columns,        // 正在读列定义
+        ColumnsEof,     // 列定义读完，等 EOF 包
+        Rows,           // 正在读行数据直到 EOF
+    };
 public:
     explicit MFMysqlClient();
     ~MFMysqlClient();
-    
-    // 初始化连接
-    void init(const std::string& host, uint16_t port, 
+
+    void init(const std::string& host, uint16_t port,
               const std::string& user, const std::string& password,
-              const std::string& database);
-    
-    // 异步查询
+              const std::string& database, ReadyCallback onReady);
+
     void execute(const std::string& sql, MFServiceId_t serviceId, size_t sessionId, const std::function<void(MFMysqlResult&& result)> &fn);
-    
-    // 断开连接
+
     void disconnect();
-    
-    MFMysqlState getState() { return m_state; }
+
+    MFMysqlState getState() const { return m_state; }
+    bool isIdle() const { return m_state == MFMysqlState::Connected && !m_inflight; }
 private:
-    // 网络回调
     void onConnect(const trantor::TcpConnectionPtr& conn);
     void onDisconnect(const trantor::TcpConnectionPtr& conn);
     void onMessage(const trantor::TcpConnectionPtr& conn, trantor::MsgBuffer* buffer);
-    
-    // 协议处理
+    void setState(MFMysqlState newState);
+    void fireReady(bool success);
+    void failInflight(const char* reason);
+private:
     void handleHandshake(trantor::MsgBuffer* buffer);
     void handleAuthResponse(trantor::MsgBuffer* buffer);
     void handleAuthSwitch(const std::vector<uint8_t>& packet);
-    void handleQueryResponse(trantor::MsgBuffer* buffer);
-    void handlePingResponse(trantor::MsgBuffer* buffer);
-    // 发送数据
+    bool handleQueryResponse(trantor::MsgBuffer* buffer);
+    void completeQuery();
+private:
     void sendAuthPacket();
     void sendQueryPacket(const std::string& sql);
     void sendPacket(const std::vector<uint8_t>& data);
-    void sendPingPacket();
-    // 读取数据
-    std::vector<uint8_t> readPacket(trantor::MsgBuffer* buffer);
-    size_t computeResultSetLength(trantor::MsgBuffer* buffer, uint64_t columnCount);
-    void parseResultSetFromBlock(const uint8_t* block, size_t blockSize, uint64_t columnCount, MFMysqlResult& result);
-    
-    // 解析结果
+
+private:
+    bool readLogicalPacket(trantor::MsgBuffer* buffer, std::vector<uint8_t>& payload);
     void parseOkPacket(const std::vector<uint8_t>& packet, MFMysqlResult& result);
     void parseErrorPacket(const std::vector<uint8_t>& packet, MFMysqlResult& result);
-    void parseResultSet(trantor::MsgBuffer* buffer, uint64_t columnCount, MFMysqlResult& result);
-
+    bool parseColumnDefinition(const std::vector<uint8_t>& packet, MFMysqlColumn& col);
+    bool parseRow(const std::vector<uint8_t>& packet, uint64_t columnCount, std::vector<MFValue>& row);
+    static bool isEofPacket(const std::vector<uint8_t>& packet);
     MFValue parseValue(std::string&& data, MFMysqlFieldType mysqlType, uint16_t flags);
-    // 工具函数
+private:
     std::string mysqlPassword(const std::string& password, const std::string& scramble);
     std::string cachingSha2Password(const std::string& password, const std::string& scramble);
     uint64_t readLengthEncodedInt(const uint8_t*& ptr);
     void skipLengthEncodedStr(const uint8_t*& ptr);
     std::string readLengthEncodedStr(const uint8_t*& ptr);
     std::string readNullStr(const uint8_t*& ptr);
-
-    // 队列处理
-    void processPendingQueries();
-
 private:
     std::shared_ptr<trantor::TcpClient> m_client;
     trantor::TcpConnectionPtr           m_connection;
-    
-    // 连接信息
+
     std::string                         m_host;
     std::string                         m_user;
     std::string                         m_password;
     std::string                         m_database;
-    
-    // 状态
+
     MFMysqlState                        m_state;
-    uint8_t                             m_packetNumber;
+    uint8_t                             m_packetNumber; // MySQL 包序号：发送时使用并自增；接收时同步自服务器
     uint16_t                            m_port;
 
     std::string                         m_scramble;
     std::string                         m_authPlugin;
-    
-    // 查询队列
-    std::queue<MFMysqlQuery>            m_queryQueue;
+
+    QueryPhase                          m_queryPhase;
+    uint64_t                            m_columnCount;
+    std::optional<MFMysqlResult>        m_pendingResult;
+
+    std::optional<MFMysqlQuery>         m_inflight;
+    ReadyCallback                       m_onReady;
     trantor::EventLoopThread*           m_eventLoopThread;
 };
 

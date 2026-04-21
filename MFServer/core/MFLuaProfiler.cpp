@@ -3,13 +3,13 @@
 
 #include <cstdio>
 
-static const int kProfilerRegistryKey = 0;
+static constexpr int kProfilerRegistryKey = 0;
 
 MFLuaProfiler::MFLuaProfiler(lua_State* L, std::string serviceName)
 : m_L(L)
 , m_running(false)
 , m_callDepth(0)
-, m_skipReturns(0) 
+, m_skipReturns(0)
 , m_serviceName(std::move(serviceName)) {
 }
 
@@ -313,7 +313,7 @@ static void printTreeNodeImpl(std::string& out, const ProfileTreeNode* node,
     const char* continuation = isLast ? kBlank  : kVertical;
 
     int nameDisplayWidth = depth * 4 + static_cast<int>(node->funcName.size());
-    const int kNameCol = 30;
+    constexpr int kNameCol = 30;
     int pad = kNameCol - nameDisplayWidth;
     if (pad < 1) pad = 1;
 

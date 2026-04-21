@@ -18,7 +18,7 @@ public:
     explicit MFSqlConnection(MFMysqlClient* client, int maxIdleTime);
     ~MFSqlConnection();
 public:
-    bool isVaild();
+    bool isValid();
 public:
     MFProperty(MFMysqlClient*, m_client, Client);
     MFProperty(std::chrono::steady_clock::time_point, m_lastUsedTime, LastUsedTime);
@@ -29,13 +29,6 @@ class MFMysqlConnectPool {
 public:
     MFMysqlConnectPool();
     ~MFMysqlConnectPool();
-private:
-    enum ActionType : uint8_t {
-        BeginTransaction = 1,
-        ExecuteInTransaction,
-        CommitTransaction,
-        RollbackTransaction
-	};
 public:
     void init(const std::string& url, int port, const std::string& user, const std::string& password, const std::string& database, int minPoolSize, int maxPoolSize, int maxIdleTime);
 public:
@@ -48,14 +41,22 @@ public:
     size_t commitTransaction(size_t transactionId, MFServiceId_t serviceId);
     size_t rollbackTransaction(size_t transactionId, MFServiceId_t serviceId);
 private:
-    MFSqlConnection* checkTransactionError(size_t transactionId, MFServiceId_t serviceId, ActionType actionType);
+    enum class TxRelease : uint8_t {
+        Never,
+        OnFailure,
+        Always,
+    };
+    size_t executeOnTransaction(size_t transactionId, MFServiceId_t serviceId, std::string sql, TxRelease policy);
 private:
     MFSqlConnection* getConnection();
-    MFSqlConnection* createConnect();
+    void createConnect();
     void releaseConnect(MFSqlConnection* connection);
     void clearExpiredConnect();
     void dispatchExecute(MFMysqlResult&& result, const std::string& sql);
     void dispatchQuery(MFMysqlResult&& result, bool queryOne, const std::string& sql);
+    void dispatchAcquireError(MFServiceId_t serviceId, size_t sessionId, bool query, bool queryOne, const std::string& sql);
+	void deleteSqlConnection(MFSqlConnection* connection);
+	void deleteSqlClient(MFMysqlClient* client);
 private:
     MFBlockingQueue<MFSqlConnection*>       m_connectPool;
     std::atomic<int>                        m_currentPoolSize;
@@ -75,12 +76,12 @@ private:
     MFStripedMap<size_t, MFSqlConnection*>              m_transactionConnections;
 };
 
-class MFMysqlPoolMananger {
+class MFMysqlPoolManager {
 public:
-    MFMysqlPoolMananger();
-    ~MFMysqlPoolMananger();
+    MFMysqlPoolManager();
+    ~MFMysqlPoolManager();
 public:
-    static MFMysqlPoolMananger* getInstance();
+    static MFMysqlPoolManager* getInstance();
     static void destroyInstance();
 private:
 	MFMysqlConnectPool* getConnectPool(int key, const sol::this_state& state);
@@ -94,7 +95,7 @@ public:
     size_t commitTransaction(size_t transactionId, MFServiceId_t serviceId, int key, const sol::this_state& state);
     size_t rollbackTransaction(size_t transactionId, MFServiceId_t serviceId, int key, const sol::this_state& state);
 private:
-    static MFMysqlPoolMananger* m_instance;
+    static MFMysqlPoolManager* m_instance;
 private:
     MFFastMap<int, MFMysqlConnectPool*>             m_sqlPoolMap;
     mutable std::shared_mutex                       m_poolMtx;

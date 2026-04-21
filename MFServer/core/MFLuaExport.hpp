@@ -19,7 +19,6 @@ public:
 	static void exportMFMysqlPoolManager(sol::state& lua);
 	static void exportMFConnectManager(sol::state& lua);
 	static void exportMFProfiler(sol::state& lua, MFLuaProfiler* luaProfiler);
-	static void ensureExportHttpRequest(sol::state_view lua);
 };
 
 

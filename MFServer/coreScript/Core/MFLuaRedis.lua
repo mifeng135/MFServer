@@ -17,13 +17,16 @@ end
 
 function MFLuaRedis.executeCoroutine(key, ...)
     local sessionId = MFNativeRedis.executeAsync(MF.core.serviceId, key, ...)
+    if sessionId <= 0 then
+        return nil
+    end
     coRedisMap[sessionId] = coroutineRunning()
     return coroutineYield "suspended"
 end
 
 ---同步获取结果
-function MFLuaRedis.executeSync(key, ...)
-    return MFNativeRedis.executeSync(key, ...)
+function MFLuaRedis.executeSync(key, timeOut, ...)
+    return MFNativeRedis.executeSync(key, timeOut, ...)
 end
 
 function MFLuaRedis.onExecuteCallBack(sessionId, result)
