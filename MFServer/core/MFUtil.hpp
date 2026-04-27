@@ -34,7 +34,7 @@ public:
     static bool checkFileExists(const std::string& fullPath);
     static uint32_t genTimerId();
 	static uint32_t genConvId();
-    static unsigned int readUint32(const char *buf);
+    static uint32_t readUint32(const char *buf);
 	static void preloadSharedTable(const std::string& rootDir);
 public:
 	static std::string getPathPrefix(const std::filesystem::path& p);

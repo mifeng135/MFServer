@@ -18,7 +18,7 @@ end
 
 function MFWebSocket.sendText(fd, data)
     local encodeData = cjson.encode(data)
-    MFSocket.webSocketSend(fd, encodeData, #encodeData, WebSocketPing)
+    MFSocket.webSocketSend(fd, encodeData, #encodeData, WebSocketText)
 end
 
 return MFWebSocket

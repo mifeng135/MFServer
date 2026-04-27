@@ -11,7 +11,7 @@ MFSqlMapper._registry = {}
 MFSqlMapper._loadedNamespaces = {}
 MFSqlMapper._mapperBasePath = MFApplication.getSqlMapperRoot()
 
---- @param id string 如 "user.selectById"
+---@param id string 如 "user.selectById"
 ---@private
 function MFSqlMapper.ensureNamespaceLoaded(id)
     local namespace = id:match("^([%w_]+)%.")

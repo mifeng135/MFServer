@@ -16,12 +16,10 @@ MFLuaShareData::~MFLuaShareData() {
 
 void MFLuaShareData::addOrUpdate(size_t key, void* data, size_t len) {
     m_shareMap.upsert(key, [data, len](MFShareInfo*& info) {
-            free(info->m_data);
-            info->m_data = data;
-            info->m_len = len;
-        },
-        new MFShareInfo(data, len)
-    );
+         free(info->m_data);
+         info->m_data = data;
+         info->m_len = len;
+    }, new MFShareInfo(data, len));
 }
 
 std::tuple<sol::object, sol::object> MFLuaShareData::get(size_t key, const sol::this_state& ts) {

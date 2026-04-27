@@ -15,6 +15,7 @@ require "Core.MFString"
 ---@field tcp MFTcpSocket
 ---@field udp MFUdpSocket
 ---@field websocket MFWebSocket
+MF = {}
 --- 子模块按需懒加载：首次访问 MF.xxx 时 require 并缓存
 local MFSubmodules = {
     core = "Core.MFCore",

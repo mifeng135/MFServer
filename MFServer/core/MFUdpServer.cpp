@@ -38,39 +38,56 @@ void MFUdpServer::init(const std::string &ip, uint16_t port, MFServiceId_t servi
     m_eventLoopThread->run();
 
     m_server = new trantor::UdpServer(m_eventLoopThread->getLoop(), addr, std::to_string(serviceId));
+
+    m_server->setBalancingCallback([](const char *buf, size_t len, bool& sameLoop, trantor::EventLoop* currentLoop) -> trantor::EventLoop* {
+        if (len < 4) {
+            sameLoop = true;
+            return currentLoop;
+        }
+
+        uint32_t conv = MFUtil::readUint32(buf);
+        std::shared_ptr<MFUdpChannel> channel = MFUdpChannelManager::getInstance()->findChannel(conv);
+        if (!channel) {
+            sameLoop = true;
+            return currentLoop;
+        }
+
+        trantor::EventLoop* loop = channel->getEventLoop();
+        sameLoop = loop == currentLoop;
+        return loop;
+    });
+
     m_server->setMessageCallback([this](trantor::UdpSocket* udpSocket, const char* buf, size_t len, trantor::InetAddress&& address, trantor::EventLoop* loop) {
         if (len < 4) {
             return;
         }
-        unsigned int conv = MFUtil::readUint32(buf);
-        std::shared_ptr<MFUdpChannel> channel = MFUdpChannelManager::getInstance()->getOrCreateChannel(conv, loop, [this](int convId) {
+        uint32_t conv = MFUtil::readUint32(buf);
+        std::shared_ptr<MFUdpChannel> channel = MFUdpChannelManager::getInstance()->getOrCreateChannel(conv, loop, [this](uint32_t convId) {
             onActive(convId);
         });
 
-        channel->setReceiveCallback([this](int convId, const char* buffer, size_t length) {
+        channel->setReceiveCallback([this](uint32_t convId, const char* buffer, size_t length) {
 			onMessage(convId, buffer, length);
         });
 
-        channel->setDisconnectCallback([this](int convId) {
+        channel->setDisconnectCallback([this](uint32_t convId) {
             onInActive(convId);
         });
 
-        channel->onReceive(std::move(address), udpSocket, buf, len);
+        channel->onReceive(std::move(address), udpSocket, buf, len, loop);
     });
 
     m_server->setIoLoopNum(ioThread);
     m_server->start();
+    MFUdpChannelManager::getInstance()->init(m_server->getIoLoops());
     m_application->logInfo("start udpServer ip = {}, port = {}, ioThreadNumber = {}", ip, port, ioThread);
-    m_eventLoopThread->getLoop()->runEvery(0.01, []() {
-        MFUdpChannelManager::getInstance()->updateChannels();
-    });
 }
 
 void MFUdpServer::stop() {
     m_server->stop();
 }
 
-void MFUdpServer::onMessage(int conv, const char* buf, size_t len) {
+void MFUdpServer::onMessage(uint32_t conv, const char* buf, size_t len) {
     MFSocketMessage* message = m_tcpServerMsgPool->pop();
     message->setPool(m_tcpServerMsgPool);
     message->setDst(m_serviceId);

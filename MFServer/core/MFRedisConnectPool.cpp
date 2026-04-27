@@ -37,15 +37,15 @@ void MFRedisConnectPool::createConnect() {
 
     MFRedisClient* client = new MFRedisClient();
     ++m_currentPoolSize;
-    client->init(m_url, m_port, [this](MFRedisClient* client, bool success) {
+    client->init(m_url, m_port, [this](MFRedisClient* clientInit, bool success) {
         if (!success) {
             MFApplication::getInstance()->logInfo("Redis createConnect failed {}:{}", m_url, m_port);
             --m_currentPoolSize;
-            deleteClient(client);
+            deleteClient(clientInit);
             return;
         }
-        client->lastUsedTime = std::chrono::steady_clock::now();
-        m_redisContextPool.enqueue(client);
+        clientInit->lastUsedTime = std::chrono::steady_clock::now();
+        m_redisContextPool.enqueue(clientInit);
     }, m_password);
 }
 
@@ -70,7 +70,7 @@ void MFRedisConnectPool::init(const std::string& url, int port, const std::strin
 }
 
 void MFRedisConnectPool::deleteClient(MFRedisClient* client) {
-    MFApplication::getInstance()->submitIo([this, client]()-> int {
+    MFApplication::getInstance()->submitIo([client]()-> int {
         delete client;
         return 1;
     });

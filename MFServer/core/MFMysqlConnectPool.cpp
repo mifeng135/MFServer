@@ -128,14 +128,14 @@ void MFMysqlConnectPool::createConnect() {
     }
     MFMysqlClient* client = new MFMysqlClient();
     ++m_currentPoolSize;
-    client->init(m_url, m_port, m_user, m_password, m_database, [this](MFMysqlClient* client, bool success) {
+    client->init(m_url, m_port, m_user, m_password, m_database, [this](MFMysqlClient* clientInit, bool success) {
         if (!success) {
             MFApplication::getInstance()->logInfo("MySQL createConnect failed {}:{}:{}", m_url, m_port, m_database);
             --m_currentPoolSize;
-            deleteSqlClient(client);
+            deleteSqlClient(clientInit);
             return;
         }
-        MFSqlConnection* connection = new MFSqlConnection(client, m_maxIdleTime);
+        MFSqlConnection* connection = new MFSqlConnection(clientInit, m_maxIdleTime);
         connection->setLastUsedTime(std::chrono::steady_clock::now());
         m_connectPool.enqueue(connection);
     });

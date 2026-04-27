@@ -318,12 +318,11 @@ uint32_t MFUtil::genTimerId() {
     return m_timerId.fetch_add(1, std::memory_order_relaxed);
 }
 
-uint32_t MFUtil::genConvId()
-{
+uint32_t MFUtil::genConvId() {
     return m_convId.fetch_add(1, std::memory_order_relaxed);
 }
 
-unsigned int MFUtil::readUint32(const char *buf) {
+uint32_t MFUtil::readUint32(const char *buf) {
     const unsigned char *p = reinterpret_cast<const unsigned char *>(buf);
     return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
 }

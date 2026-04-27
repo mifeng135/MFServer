@@ -23,6 +23,9 @@ unzip drogon-1.9.11
 cd drogon-1.9.11
 mkdir build
 cd build 
+如果安装了ssl
+cmake -DCMAKE_BUILD_TYPE=Release ..
+否则
 cmake -DCMAKE_BUILD_TYPE=Release -DTRANTOR_USE_TLS=none ..
 make -j8
 make install
@@ -45,11 +48,9 @@ trantor-1.5.26 编译
 cd build
 
 windows 
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DTRANTOR_USE_TLS=none ..
-cmake --build .
+cmake -DBUILD_SHARED_LIBS=ON -DTRANTOR_USE_TLS=none ..
+cmake --build . --config Release
 
-liunx
-cmake -DCMAKE_BUILD_TYPE=Release -DTRANTOR_USE_TLS=none ..
-make -j8
+
 
 

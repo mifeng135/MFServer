@@ -18,7 +18,7 @@
 #pragma once
 #include <trantor/utils/NonCopyable.h>
 #include <trantor/utils/Date.h>
-#include <trantor/utils/LockFreeQueue.h>
+#include <trantor/utils/MPSCQueue.hpp>
 #include <trantor/exports.h>
 #include <thread>
 #include <memory>
@@ -116,7 +116,9 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
     static EventLoop *getEventLoopOfCurrentThread();
 
     /**
-     * @brief Run the function f in the thread of th
+     * @brief Run the function f in the thread of the event loop.
+     *
+     * @param f
      * @note If the current thread is the thread of the event loop, the function
      * f is executed directly before the method exiting.
      */
@@ -136,6 +138,7 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
     /**
      * @brief Run the function f in the thread of the event loop.
      *
+     * @param f
      * @note The difference between this method and the runInLoop() method is
      * that the function f is executed after the method exiting no matter if the
      * current thread is the thread of the event loop.
@@ -225,9 +228,19 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
      */
     void moveToCurrentThread();
 
+    /**
+     * @brief Update channel status. This method is usually used internally.
+     *
+     * @param chl
+     */
     void updateChannel(Channel *chl);
 
-
+    /**
+     * @brief Remove a channel from the event loop. This method is usually used
+     * internally.
+     *
+     * @param chl
+     */
     void removeChannel(Channel *chl);
 
     /**
@@ -242,6 +255,8 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
 
     /**
      * @brief Set the index of the event loop.
+     *
+     * @param index
      */
     void setIndex(size_t index)
     {
@@ -293,9 +308,9 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
     Channel *currentActiveChannel_;
 
     bool eventHandling_;
-    MpscQueue<Func> funcs_;
+    daking::MPSC_queue<Func> funcs_;
     std::unique_ptr<TimerQueue> timerQueue_;
-    MpscQueue<Func> funcsOnQuit_;
+    daking::MPSC_queue<Func> funcsOnQuit_;
     bool callingFuncs_{false};
 #ifdef __linux__
     int wakeupFd_;

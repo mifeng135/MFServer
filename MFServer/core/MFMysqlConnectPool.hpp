@@ -58,9 +58,6 @@ private:
 	void deleteSqlConnection(MFSqlConnection* connection);
 	void deleteSqlClient(MFMysqlClient* client);
 private:
-    MFBlockingQueue<MFSqlConnection*>       m_connectPool;
-    std::atomic<int>                        m_currentPoolSize;
-
     MFProperty(int, m_port, Port);
     MFPropertyRef(std::string, m_url, Url)
     MFPropertyRef(std::string, m_user, User);
@@ -69,8 +66,10 @@ private:
     MFProperty(int, m_maxPoolSize, MaxPoolSize);
     MFProperty(int, m_maxIdleTime, MaxIdleTime);//milliseconds
     MFProperty(int, m_minPoolSize, MinPoolSize);
-    MFObjectPool<MFMysqlMessage>*   m_sqlMsgPool;
 private:
+    MFBlockingQueue<MFSqlConnection*>                   m_connectPool;
+    std::atomic<int>                                    m_currentPoolSize;
+    MFObjectPool<MFMysqlMessage>*                       m_sqlMsgPool;
     std::mutex                                          m_clearMutex;
     uint32_t                                            m_timerId;
     MFStripedMap<size_t, MFSqlConnection*>              m_transactionConnections;

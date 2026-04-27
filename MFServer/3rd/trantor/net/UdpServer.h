@@ -41,6 +41,7 @@ class TRANTOR_EXPORT UdpServer : NonCopyable
     using MessageCallback =
         std::function<void(UdpSocket *socket, const char *buf, size_t len, InetAddress&& address, EventLoop* loop)>;
 
+    using BalancingCallback = std::function<EventLoop*(const char *buf, size_t len, bool&sameLoop, EventLoop* loop)>;
     /**
      * @brief Construct a new UDP server instance.
      * @param loop The event loop for the server (and the only socket when not
@@ -103,20 +104,34 @@ class TRANTOR_EXPORT UdpServer : NonCopyable
         messageCallback_ = std::move(cb);
     }
 
+    void setBalancingCallback(const BalancingCallback &cb)
+    {
+        balancingCallback_ = cb;
+    }
+
+    void setBalancingCallback(BalancingCallback &&cb)
+    {
+        balancingCallback_ = std::move(cb);
+    }
+
     const std::string &name() const
     {
         return name_;
     }
+    
     std::string ipPort() const;
+
     const InetAddress &address() const
     {
         return addr_;
     }
+    
     EventLoop *getLoop() const
     {
         return loop_;
     }
-    std::vector<EventLoop *> getIoLoops() const
+    
+    const std::vector<EventLoop*>& getIoLoops() const
     {
         return ioLoops_;
     }
@@ -130,7 +145,7 @@ class TRANTOR_EXPORT UdpServer : NonCopyable
     bool reUseAddr_;
     bool reUsePort_;
     MessageCallback messageCallback_;
-
+    BalancingCallback balancingCallback_;
     std::shared_ptr<EventLoopThreadPool> loopPoolPtr_;
     std::vector<EventLoop *> ioLoops_;
     size_t numIoLoops_{0};

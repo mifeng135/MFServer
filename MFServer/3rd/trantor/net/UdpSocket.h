@@ -35,6 +35,8 @@ class TRANTOR_EXPORT UdpSocket : NonCopyable
     using MessageCallback =
         std::function<void(UdpSocket *socket, const char *buf, size_t len, InetAddress&& address, EventLoop* loop)>;
 
+    using BalancingCallback = std::function<EventLoop*(const char *buf, size_t len, bool& sameLoop, EventLoop* loop)>;
+
     /**
      * @brief Create and bind a UDP socket on the given address.
      * @param loop Event loop that drives this socket.
@@ -55,6 +57,15 @@ class TRANTOR_EXPORT UdpSocket : NonCopyable
     void setMessageCallback(MessageCallback &&cb)
     {
         messageCallback_ = std::move(cb);
+    }
+
+    void setBalancingCallback(const BalancingCallback &cb)
+    {
+        balancingCallback_ = cb;
+    }
+    void setBalancingCallback(BalancingCallback &&cb)
+    {
+        balancingCallback_ = std::move(cb);
     }
 
     /**
@@ -84,10 +95,12 @@ class TRANTOR_EXPORT UdpSocket : NonCopyable
 
     static int createNonblockingUdpSocket(int family);
 
+private:
     int sockFd_;
     EventLoop *loop_;
     std::unique_ptr<Channel> channel_;
     MessageCallback messageCallback_;
+    BalancingCallback balancingCallback_;
     std::deque<std::pair<InetAddress, std::string>> sendQueue_;
 };
 

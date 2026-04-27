@@ -13,7 +13,7 @@ static int udpOutPutFn(const char *buf, int len, ikcpcb *kcp, void *user) {
     return channel->realSend(buf, len);
 }
 
-MFUdpChannel::MFUdpChannel(unsigned int conv, trantor::EventLoop* loop, std::function<void(int conv)> connectFn, uint32_t timeoutMs)
+MFUdpChannel::MFUdpChannel(uint32_t conv, trantor::EventLoop* loop, std::function<void(uint32_t conv)> connectFn, uint32_t timeoutMs)
 : m_kcp(nullptr)
 , m_receiveBuffer(nullptr)
 , m_udpSocket(nullptr)
@@ -23,7 +23,8 @@ MFUdpChannel::MFUdpChannel(unsigned int conv, trantor::EventLoop* loop, std::fun
 , m_lastRecvTs(0)
 , m_receiveCallback(nullptr)
 , m_disconnectCallback(nullptr)
-, m_openCallback(std::move(connectFn)) {
+, m_openCallback(std::move(connectFn))
+, m_isRemove(false) {
 
 }
 
@@ -53,12 +54,8 @@ void MFUdpChannel::initKcp() {
 }
 
 void MFUdpChannel::send(const char* buf, size_t len) {
-    if (m_eventLoop->isInLoopThread()) {
-        ikcp_send(m_kcp, buf, static_cast<int>(len));
-        return;
-    }
-    auto self = shared_from_this();
-    m_eventLoop->runInLoop([self, payload = std::string(buf, len)]() {
+    std::shared_ptr<MFUdpChannel> self = shared_from_this();
+    m_eventLoop->runInLoop([self, payload = std::string(buf, len)] {
         ikcp_send(self->m_kcp, payload.data(), static_cast<int>(payload.size()));
     });
 }
@@ -70,20 +67,13 @@ int MFUdpChannel::realSend(const char *buf, size_t len) {
     return 0;
 }
 
-void MFUdpChannel::onReceive(trantor::InetAddress&& address, trantor::UdpSocket* socket, const char* buf, size_t len) {
-    if (m_eventLoop->isInLoopThread()) {
-        updateChannelData(std::move(address), socket);
-        receiveInLoop(buf, len);
-        return;
-    }
-    auto self = shared_from_this();
-    m_eventLoop->runInLoop([self, addr = std::move(address), socket, packet = std::string(buf, len)]() mutable {
-        self->updateChannelData(std::move(addr), socket);
-        self->receiveInLoop(packet.data(), packet.size());
-    });
+void MFUdpChannel::onReceive(trantor::InetAddress&& address, trantor::UdpSocket* socket, const char* buf, size_t len, trantor::EventLoop* loop) {
+    m_address = std::move(address);
+    m_udpSocket = socket;
+    processBuffer(buf, len);
 }
 
-void MFUdpChannel::receiveInLoop(const char* buf, size_t len) {
+void MFUdpChannel::processBuffer(const char* buf, size_t len) {
     m_lastRecvTs = iclock();
     if (ikcp_input(m_kcp, buf, static_cast<long>(len)) != 0) {
         return;
@@ -104,38 +94,40 @@ void MFUdpChannel::receiveInLoop(const char* buf, size_t len) {
         }
         m_receiveBuffer->retrieveAll();
     }
-    ikcp_update(m_kcp, iclock());
-}
-
-void MFUdpChannel::updateChannelData(trantor::InetAddress&& address, trantor::UdpSocket* socket) {
-	m_address = std::move(address);
-	m_udpSocket = socket;
+    ikcp_update(m_kcp, m_lastRecvTs);
 }
 
 void MFUdpChannel::updateKcp() {
-    auto self = shared_from_this();
-    m_eventLoop->runInLoop([self]()-> void {
-        if (!self->m_kcp) {
-            return;
-        }
-        ikcp_update(self->m_kcp, iclock());
-    });
+    uint32_t currentTime = iclock();
+    uint32_t nextUpdate = ikcp_check(m_kcp, currentTime);
+    if (currentTime >= nextUpdate) {
+        ikcp_update(m_kcp, currentTime);
+    }
 }
 
-void MFUdpChannel::onDisconnect()
-{
+void MFUdpChannel::onDisconnect() {
     if (m_disconnectCallback) {
         m_disconnectCallback(m_conv);
     }
 }
 
-unsigned int MFUdpChannel::getConv() const {
-    return m_conv;
+void MFUdpChannel::removeChannel() {
+    std::shared_ptr<MFUdpChannel> self = shared_from_this();
+    m_eventLoop->runInLoop([self] {
+        self->m_isRemove = true;
+    });
 }
+
+uint32_t MFUdpChannel::getConv() const {
+    return m_conv;
+}	
 
 bool MFUdpChannel::isDisconnected() const {
     if (m_lastRecvTs == 0) {
         return false;
+    }
+    if (m_isRemove) {
+        return true;
     }
     uint32_t now = iclock();
     return now - m_lastRecvTs > m_timeoutMs;

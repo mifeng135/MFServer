@@ -53,8 +53,8 @@ void MFConnectionManager::forceCloseWebSocketConnection(size_t fd) {
 }
 
 void MFConnectionManager::sendWebSocketConnection(size_t fd, const char *msg, int len, drogon::WebSocketMessageType type) {
-    m_webConnectionMap.find_fn(fd, [msg, len](const drogon::WebSocketConnectionPtr& connPtr) {
-        connPtr->send(msg, len);
+    m_webConnectionMap.find_fn(fd, [msg, len, type](const drogon::WebSocketConnectionPtr& connPtr) {
+        connPtr->send(msg, len, type);
     });
 }
 

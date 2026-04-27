@@ -7,12 +7,12 @@
 #include <limits>
 
 // --- MFRedisReply ---
-void MFRedisReply::setStr(std::string&& s) {
+void MFRedisReply::setStr(std::string &&s) {
     type = Type::String;
     str = std::move(s);
 }
 
-void MFRedisReply::setStr(const char* p, size_t n) {
+void MFRedisReply::setStr(const char *p, size_t n) {
     type = Type::String;
     str.assign(p, n);
 }
@@ -42,12 +42,12 @@ void MFRedisReply::setError(std::string s) {
     str = std::move(s);
 }
 
-void MFRedisReply::setError(const char* s) {
+void MFRedisReply::setError(const char *s) {
     type = Type::Error;
     str = s;
 }
 
-void MFRedisReply::setError(const char* p, size_t n) {
+void MFRedisReply::setError(const char *p, size_t n) {
     type = Type::Error;
     str.assign(p, n);
 }
@@ -73,7 +73,7 @@ MFRedisClient::~MFRedisClient() {
     }
 }
 
-void MFRedisClient::init(const std::string& host, uint16_t port, ReadyCallback onReady, const std::string& password) {
+void MFRedisClient::init(const std::string &host, uint16_t port, ReadyCallback onReady, const std::string &password) {
     m_host = host;
     m_port = port;
     m_password = password;
@@ -85,11 +85,11 @@ void MFRedisClient::init(const std::string& host, uint16_t port, ReadyCallback o
     trantor::InetAddress addr(host, port);
     m_client = std::make_shared<trantor::TcpClient>(m_eventLoopThread->getLoop(), addr, "RedisClient");
 
-    m_client->setConnectionCallback([this](const trantor::TcpConnectionPtr& conn) {
+    m_client->setConnectionCallback([this](const trantor::TcpConnectionPtr &conn) {
         conn->connected() ? onConnect(conn) : onDisconnect(conn);
     });
 
-    m_client->setMessageCallback([this](const trantor::TcpConnectionPtr& conn, trantor::MsgBuffer* buf) {
+    m_client->setMessageCallback([this](const trantor::TcpConnectionPtr &conn, trantor::MsgBuffer *buf) {
         onMessage(conn, buf);
     });
 
@@ -103,7 +103,7 @@ void MFRedisClient::init(const std::string& host, uint16_t port, ReadyCallback o
     m_client->enableRetry();
 }
 
-void MFRedisClient::onConnect(const trantor::TcpConnectionPtr& conn) {
+void MFRedisClient::onConnect(const trantor::TcpConnectionPtr &conn) {
     m_connection = conn;
     m_connection->setTcpNoDelay(true);
 
@@ -116,7 +116,7 @@ void MFRedisClient::onConnect(const trantor::TcpConnectionPtr& conn) {
     }
 }
 
-void MFRedisClient::onDisconnect(const trantor::TcpConnectionPtr& conn) {
+void MFRedisClient::onDisconnect(const trantor::TcpConnectionPtr &conn) {
     MFApplication::getInstance()->logInfo("Redis disconnected from {}:{}", m_host, m_port);
     setState(MFRedisState::Disconnected);
 }
@@ -148,7 +148,7 @@ void MFRedisClient::fireReady(bool success) {
     m_onReady = nullptr;
 }
 
-void MFRedisClient::failInflight(const char* reason) {
+void MFRedisClient::failInflight(const char *reason) {
     if (!m_inflight) {
         return;
     }
@@ -160,7 +160,7 @@ void MFRedisClient::failInflight(const char* reason) {
     cmd.fn(std::move(result));
 }
 
-void MFRedisClient::onMessage(const trantor::TcpConnectionPtr& conn, trantor::MsgBuffer* buffer) {
+void MFRedisClient::onMessage(const trantor::TcpConnectionPtr &conn, trantor::MsgBuffer *buffer) {
     try {
         while (buffer->readableBytes() > 0) {
             const size_t bytesBefore = buffer->readableBytes();
@@ -211,13 +211,13 @@ void MFRedisClient::onMessage(const trantor::TcpConnectionPtr& conn, trantor::Ms
                 break;
             }
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         MFApplication::getInstance()->logInfo("Redis onMessage error: {}", e.what());
         disconnect();
     }
 }
 
-bool MFRedisClient::findCrLf(const char* p, size_t n, size_t& lineLen) {
+bool MFRedisClient::findCrLf(const char *p, size_t n, size_t &lineLen) {
     for (size_t i = 0; i + 1 < n; ++i) {
         if (p[i] == '\r' && p[i + 1] == '\n') {
             lineLen = i;
@@ -227,11 +227,11 @@ bool MFRedisClient::findCrLf(const char* p, size_t n, size_t& lineLen) {
     return false;
 }
 
-void MFRedisClient::setProtocolError(MFRedisReply& out, const char* msg) {
+void MFRedisClient::setProtocolError(MFRedisReply &out, const char *msg) {
     out.setError(msg);
 }
 
-void MFRedisClient::setProtocolErrorByte(MFRedisReply& out, char byte) {
+void MFRedisClient::setProtocolErrorByte(MFRedisReply &out, char byte) {
     if (byte == '\r' || byte == '\n' || byte == '"' || byte == '\\' || std::isprint(static_cast<unsigned char>(byte))) {
         out.setError("Protocol error, got \"" + std::string(1, byte) + "\" as reply type byte");
     } else {
@@ -241,7 +241,7 @@ void MFRedisClient::setProtocolErrorByte(MFRedisReply& out, char byte) {
     }
 }
 
-static bool hasCrLf(const char* p, size_t len) {
+static bool hasCrLf(const char *p, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         if (p[i] == '\r' || p[i] == '\n') {
             return true;
@@ -250,7 +250,7 @@ static bool hasCrLf(const char* p, size_t len) {
     return false;
 }
 
-bool MFRedisClient::parseSimpleString(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseSimpleString(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -264,7 +264,7 @@ bool MFRedisClient::parseSimpleString(const char* p, size_t n, MFRedisReply& out
     return true;
 }
 
-bool MFRedisClient::parseError(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseError(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -278,7 +278,7 @@ bool MFRedisClient::parseError(const char* p, size_t n, MFRedisReply& out, size_
     return true;
 }
 
-bool MFRedisClient::parseInteger(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseInteger(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -294,7 +294,7 @@ bool MFRedisClient::parseInteger(const char* p, size_t n, MFRedisReply& out, siz
     return true;
 }
 
-bool MFRedisClient::parseBulkString(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseBulkString(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -328,7 +328,7 @@ bool MFRedisClient::parseBulkString(const char* p, size_t n, MFRedisReply& out, 
 
 static constexpr long long kMaxArrayElements = ((1LL << 32) - 1);
 
-bool MFRedisClient::parseArrayLike(const char* p, size_t n, MFRedisReply& out, size_t& consumed, int multiplier) {
+bool MFRedisClient::parseArrayLike(const char *p, size_t n, MFRedisReply &out, size_t &consumed, int multiplier) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -381,11 +381,11 @@ bool MFRedisClient::parseArrayLike(const char* p, size_t n, MFRedisReply& out, s
     return true;
 }
 
-bool MFRedisClient::parseArray(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseArray(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     return parseArrayLike(p, n, out, consumed, 1);
 }
 
-bool MFRedisClient::parseNil(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseNil(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -399,7 +399,7 @@ bool MFRedisClient::parseNil(const char* p, size_t n, MFRedisReply& out, size_t&
     return true;
 }
 
-bool MFRedisClient::parseBool(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseBool(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -413,7 +413,7 @@ bool MFRedisClient::parseBool(const char* p, size_t n, MFRedisReply& out, size_t
     return true;
 }
 
-bool MFRedisClient::parseDouble(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseDouble(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -423,7 +423,7 @@ bool MFRedisClient::parseDouble(const char* p, size_t n, MFRedisReply& out, size
         setProtocolError(out, "Double value is too large");
         return true;
     }
-    auto ci = [](const char* s, size_t sn, const char* t) {
+    auto ci = [](const char *s, size_t sn, const char *t) {
         size_t tn = std::strlen(t);
         if (sn != tn) {
             return false;
@@ -448,7 +448,7 @@ bool MFRedisClient::parseDouble(const char* p, size_t n, MFRedisReply& out, size
             std::memcpy(buf, p, lineLen);
         }
         buf[lineLen] = '\0';
-        char* eptr = nullptr;
+        char *eptr = nullptr;
         d = std::strtod(buf, &eptr);
         if (lineLen == 0 || (eptr != buf + lineLen) || !std::isfinite(d)) {
             setProtocolError(out, "Bad double value");
@@ -459,7 +459,7 @@ bool MFRedisClient::parseDouble(const char* p, size_t n, MFRedisReply& out, size
     return true;
 }
 
-bool MFRedisClient::parseVerbatim(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseVerbatim(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -476,7 +476,7 @@ bool MFRedisClient::parseVerbatim(const char* p, size_t n, MFRedisReply& out, si
     if (n < headLen + ulen + 2) {
         return false;
     }
-    const char* body = p + headLen;
+    const char *body = p + headLen;
     if (ulen >= 4 && body[3] != ':') {
         setProtocolError(out, "Verbatim string 4 bytes of content type are missing or incorrectly encoded.");
         consumed = headLen + ulen + 2;
@@ -487,7 +487,7 @@ bool MFRedisClient::parseVerbatim(const char* p, size_t n, MFRedisReply& out, si
     return true;
 }
 
-bool MFRedisClient::parseBignum(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseBignum(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     size_t lineLen;
     if (!findCrLf(p, n, lineLen)) {
         return false;
@@ -506,7 +506,7 @@ bool MFRedisClient::parseBignum(const char* p, size_t n, MFRedisReply& out, size
     return true;
 }
 
-bool MFRedisClient::parseReply(const char* p, size_t n, MFRedisReply& out, size_t& consumed) {
+bool MFRedisClient::parseReply(const char *p, size_t n, MFRedisReply &out, size_t &consumed) {
     if (n < 1) {
         return false;
     }
@@ -514,48 +514,48 @@ bool MFRedisClient::parseReply(const char* p, size_t n, MFRedisReply& out, size_
     size_t sub = 0;
     bool ok = false;
     switch (first) {
-    case '+': 
-        ok = parseSimpleString(p + 1, n - 1, out, sub);
-        break;
-    case '-': 
-        ok = parseError(p + 1, n - 1, out, sub);
-        break;
-    case ':': 
-        ok = parseInteger(p + 1, n - 1, out, sub);
-        break;
-    case '$': 
-        ok = parseBulkString(p + 1, n - 1, out, sub);
-        break;
-    case '*': 
-        ok = parseArray(p + 1, n - 1, out, sub);
-        break;
-    case '_': 
-        ok = parseNil(p + 1, n - 1, out, sub);
-        break;
-    case '#': 
-        ok = parseBool(p + 1, n - 1, out, sub);
-        break;
-    case ',': 
-        ok = parseDouble(p + 1, n - 1, out, sub);
-        break;
-    case '=': 
-        ok = parseVerbatim(p + 1, n - 1, out, sub);
-        break;
-    case '%':
-    case '|': 
-        ok = parseArrayLike(p + 1, n - 1, out, sub, 2);
-        break;
-    case '~':
-    case '>':
-        ok = parseArray(p + 1, n - 1, out, sub);
-        break;
-    case '(': 
-        ok = parseBignum(p + 1, n - 1, out, sub);
-        break;
-    default:
-        setProtocolErrorByte(out, first);
-        consumed = 1;
-        return true;
+        case '+':
+            ok = parseSimpleString(p + 1, n - 1, out, sub);
+            break;
+        case '-':
+            ok = parseError(p + 1, n - 1, out, sub);
+            break;
+        case ':':
+            ok = parseInteger(p + 1, n - 1, out, sub);
+            break;
+        case '$':
+            ok = parseBulkString(p + 1, n - 1, out, sub);
+            break;
+        case '*':
+            ok = parseArray(p + 1, n - 1, out, sub);
+            break;
+        case '_':
+            ok = parseNil(p + 1, n - 1, out, sub);
+            break;
+        case '#':
+            ok = parseBool(p + 1, n - 1, out, sub);
+            break;
+        case ',':
+            ok = parseDouble(p + 1, n - 1, out, sub);
+            break;
+        case '=':
+            ok = parseVerbatim(p + 1, n - 1, out, sub);
+            break;
+        case '%':
+        case '|':
+            ok = parseArrayLike(p + 1, n - 1, out, sub, 2);
+            break;
+        case '~':
+        case '>':
+            ok = parseArray(p + 1, n - 1, out, sub);
+            break;
+        case '(':
+            ok = parseBignum(p + 1, n - 1, out, sub);
+            break;
+        default:
+            setProtocolErrorByte(out, first);
+            consumed = 1;
+            return true;
     }
     if (!ok) {
         return false;
@@ -564,7 +564,7 @@ bool MFRedisClient::parseReply(const char* p, size_t n, MFRedisReply& out, size_
     return true;
 }
 
-void MFRedisClient::sendCommand(const std::vector<std::string>& args) {
+void MFRedisClient::sendCommand(const std::vector<std::string> &args) {
     if (!m_connection) {
         return;
     }
@@ -573,7 +573,7 @@ void MFRedisClient::sendCommand(const std::vector<std::string>& args) {
     msg += '*';
     msg += std::to_string(args.size());
     msg += "\r\n";
-    for (const auto& a : args) {
+    for (const auto &a: args) {
         msg += '$';
         msg += std::to_string(a.size());
         msg += "\r\n";
@@ -583,7 +583,7 @@ void MFRedisClient::sendCommand(const std::vector<std::string>& args) {
     m_connection->send(msg);
 }
 
-void MFRedisClient::execute(std::vector<std::string> args, MFServiceId_t serviceId, size_t sessionId, const std::function<void(MFRedisResult&&)>& fn) {
+void MFRedisClient::execute(std::vector<std::string> args, MFServiceId_t serviceId, size_t sessionId, const std::function<void(MFRedisResult &&)> &fn) {
     m_eventLoopThread->getLoop()->runInLoop([this, moveArgs = std::move(args), serviceId, sessionId, fn]() mutable {
         if (m_state != MFRedisState::Connected) {
             MFRedisResult result(sessionId, serviceId);

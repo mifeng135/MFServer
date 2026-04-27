@@ -138,11 +138,11 @@ namespace daking {
          GLOBAL:  
                  TOP
 		 [[B][B][B][R][G][R]]     consumers pop chunks from here and producers push chunks to here
-                  |
+                  ↓
          [[R][R][G][R][R][G]]
-                  |
+                  ↓
 		 [[R][G][B][G][G][R]]     It is obvious that the nodes in a chunk are not required to be contiguous in memory.
-				  |               Actually, they are freely combined of nodes, 
+				  ↓               Actually, they are freely combined of nodes, 
 				 ...              ABA problem exists when read next_chunk_ and compare stack top pointer, so we use tagged pointer to avoid it.
                nullptr
     */

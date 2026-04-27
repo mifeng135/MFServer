@@ -44,11 +44,12 @@ function MFRouterHandle.isValid(router)
 end
 
 function MFRouterHandle.executeHandle(router, ...)
-    if not MFRouterHandle.isValid(router) then
+    local handle = MFRouterHandle.getRouter(router)
+    if not handle then
         MF.core.log("can not find router = {}", router)
         return
     end
-    MFRouterHandle.getRouter(router):execute(...)
+    handle:execute(...)
 end
 
 return MFRouterHandle
