@@ -15,12 +15,12 @@ public:
     void send(const char* buf, size_t len);
     int realSend(const char* buf, size_t len);
     void onReceive(trantor::InetAddress&& address, trantor::UdpSocket* socket, const char* buf, size_t len, trantor::EventLoop* loop);
-	void updateKcp();
+	void updateKcp(uint32_t currentTime);
 	void onDisconnect();
     void removeChannel();
 public:
     uint32_t getConv() const;
-    bool isDisconnected() const;
+    bool isDisconnected(uint32_t now) const;
     trantor::EventLoop* getEventLoop() { return m_eventLoop; }
 
     void setReceiveCallback(std::function<void(uint32_t conv, const char* buf, size_t len)> callback) {

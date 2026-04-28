@@ -1,5 +1,6 @@
 #include "MFUdpChannelManager.hpp"
 #include "MFUdpChannel.hpp"
+#include "MFUtil.hpp"
 
 MFUdpChannelManager* MFUdpChannelManager::m_instance = nullptr;
 
@@ -12,6 +13,7 @@ MFEventLoopTimer::MFEventLoopTimer(trantor::EventLoop *eventLoop)
 
 void MFEventLoopTimer::start() {
 	m_timerId = m_eventLoop->runEvery(0.01, [this] {
+		uint32_t now = MFUtil::iclock();
 		auto& channels = MFUdpChannelManager::getInstance()->getChannels();
 		if (channels.empty()) {
 			return;
@@ -21,19 +23,19 @@ void MFEventLoopTimer::start() {
 			return;
 		}
 		auto& loopChannel = *slot;
-        for (auto it = loopChannel.begin(); it != loopChannel.end(); it++) {
+        for (auto it = loopChannel.begin(); it != loopChannel.end(); ++it) {
             std::shared_ptr<MFUdpChannel>& ch = it->second;
-            if (ch->isDisconnected()) {
+            if (ch->isDisconnected(now)) {
                 m_waitRemove.push_back(ch->getConv());
                 ch->onDisconnect();
             } else {
-                ch->updateKcp();
+                ch->updateKcp(now);
             }
         }
 
 		for (auto conv : m_waitRemove) {
 			loopChannel.erase(conv);
-			MFUdpChannelManager::getInstance()->removeChannel(conv);
+			MFUdpChannelManager::getInstance()->remove(conv);
 		}
         m_waitRemove.clear();
 	});

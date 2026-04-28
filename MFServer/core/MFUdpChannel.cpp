@@ -1,9 +1,6 @@
 #include "MFUdpChannel.hpp"
 #include "MFUtil.hpp"
 
-static inline uint32_t iclock() {
-    return static_cast<uint32_t>(MFUtil::getMilliseconds() & 0xfffffffful);
-}
 
 static int udpOutPutFn(const char *buf, int len, ikcpcb *kcp, void *user) {
     MFUdpChannel *channel = static_cast<MFUdpChannel*>(user);
@@ -74,7 +71,7 @@ void MFUdpChannel::onReceive(trantor::InetAddress&& address, trantor::UdpSocket*
 }
 
 void MFUdpChannel::processBuffer(const char* buf, size_t len) {
-    m_lastRecvTs = iclock();
+    m_lastRecvTs = MFUtil::iclock();
     if (ikcp_input(m_kcp, buf, static_cast<long>(len)) != 0) {
         return;
     }
@@ -97,8 +94,7 @@ void MFUdpChannel::processBuffer(const char* buf, size_t len) {
     ikcp_update(m_kcp, m_lastRecvTs);
 }
 
-void MFUdpChannel::updateKcp() {
-    uint32_t currentTime = iclock();
+void MFUdpChannel::updateKcp(uint32_t currentTime) {
     uint32_t nextUpdate = ikcp_check(m_kcp, currentTime);
     if (currentTime >= nextUpdate) {
         ikcp_update(m_kcp, currentTime);
@@ -122,13 +118,12 @@ uint32_t MFUdpChannel::getConv() const {
     return m_conv;
 }	
 
-bool MFUdpChannel::isDisconnected() const {
+bool MFUdpChannel::isDisconnected(uint32_t now) const {
     if (m_lastRecvTs == 0) {
         return false;
     }
     if (m_isRemove) {
         return true;
     }
-    uint32_t now = iclock();
     return now - m_lastRecvTs > m_timeoutMs;
 }

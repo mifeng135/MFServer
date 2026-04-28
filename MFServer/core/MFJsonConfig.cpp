@@ -42,7 +42,7 @@ bool MFJsonConfig::ingestFile(const std::string& fullPath, const std::string& co
 }
 
 bool MFJsonConfig::load(const std::string& fullPath, std::string& errOut) {
-    const std::string configName = MFUtil::getFileName(fullPath);
+    const std::string& configName = MFUtil::getFileName(fullPath);
     return ingestFile(fullPath, configName, errOut);
 }
 

@@ -353,7 +353,6 @@ void MFLuaExport::exportMFConnectManager(sol::state &lua) {
         MFUdpChannelManager::getInstance()->udpSend(conv, msg, len);
     };
     
-
     table["webSocketSend"] = [](size_t fd, const char* msg, int len, drogon::WebSocketMessageType type) {
         MFConnectionManager::getInstance()->sendWebSocketConnection(fd, msg, len, type);
     };

@@ -344,6 +344,11 @@ void MFUtil::preloadSharedTable(const std::string& rootDir)
 	}
 }
 
+uint32_t MFUtil::iclock()
+{
+    return static_cast<uint32_t>(MFUtil::getMilliseconds() & 0xfffffffful);
+}
+
 std::string MFUtil::getPathPrefix(const std::filesystem::path& p)
 {
     return p.extension().string();

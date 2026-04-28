@@ -36,6 +36,7 @@ public:
 	static uint32_t genConvId();
     static uint32_t readUint32(const char *buf);
 	static void preloadSharedTable(const std::string& rootDir);
+    static uint32_t iclock();
 public:
 	static std::string getPathPrefix(const std::filesystem::path& p);
 	static std::string getFileName(const std::filesystem::path& p);
