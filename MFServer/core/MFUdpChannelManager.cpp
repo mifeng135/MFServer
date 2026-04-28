@@ -40,9 +40,10 @@ void MFEventLoopTimer::start() {
 }
 
 void MFEventLoopTimer::stop() {
-	if (m_timerId > 0) {
-		m_eventLoop->invalidateTimer(m_timerId);
+	if (m_timerId <= 0) {
+		return;
 	}
+	m_eventLoop->invalidateTimer(m_timerId);
 	m_timerId = 0;
 }
 
@@ -51,7 +52,9 @@ MFUdpChannelManager::MFUdpChannelManager() {
 }
 
 MFUdpChannelManager::~MFUdpChannelManager() {
-
+	for (size_t i = 0; i < m_eventLoopTimerVec.size(); i++) {
+		m_eventLoopTimerVec[i]->stop();
+	}
 }
 
 MFUdpChannelManager* MFUdpChannelManager::getInstance() {

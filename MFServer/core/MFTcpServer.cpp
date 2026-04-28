@@ -17,15 +17,17 @@ MFTcpServer::MFTcpServer(MFApplication* application)
 }
 
 MFTcpServer::~MFTcpServer() {
-    if (!m_eventLoopThread) {
-        return;
-    }
-    m_eventLoopThread->getLoop()->runInLoop([this]()->void {
+    if (m_server) {
         m_server->stop();
-    });
+        delete m_server;
+        m_server = nullptr;
+    }
+    if (m_eventLoopThread) {
+        delete m_eventLoopThread;
+        m_eventLoopThread = nullptr;
+    }
     delete m_tcpServerMsgPool;
-    delete m_eventLoopThread;
-    delete m_server;
+    m_tcpServerMsgPool = nullptr;
 }
 
 void MFTcpServer::init(const std::string &ip, uint16_t port, MFServiceId_t serviceId, int ioThread, uint32_t unique, uint8_t type)
@@ -60,7 +62,9 @@ void MFTcpServer::init(const std::string &ip, uint16_t port, MFServiceId_t servi
 
 void MFTcpServer::stop()
 {
-    m_server->stop();
+    if (m_server) {
+        m_server->stop();
+    }
 }
 
 void MFTcpServer::setIdleTime(size_t timeSeconds)

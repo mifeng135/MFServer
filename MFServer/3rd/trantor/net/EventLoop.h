@@ -118,7 +118,7 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
     /**
      * @brief Run the function f in the thread of the event loop.
      *
-     * @param f
+     * @param f 1
      * @note If the current thread is the thread of the event loop, the function
      * f is executed directly before the method exiting.
      */
@@ -138,7 +138,7 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
     /**
      * @brief Run the function f in the thread of the event loop.
      *
-     * @param f
+     * @param f 1
      * @note The difference between this method and the runInLoop() method is
      * that the function f is executed after the method exiting no matter if the
      * current thread is the thread of the event loop.
@@ -231,7 +231,7 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
     /**
      * @brief Update channel status. This method is usually used internally.
      *
-     * @param chl
+     * @param chl 1
      */
     void updateChannel(Channel *chl);
 
@@ -239,7 +239,7 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
      * @brief Remove a channel from the event loop. This method is usually used
      * internally.
      *
-     * @param chl
+     * @param chl 1
      */
     void removeChannel(Channel *chl);
 
@@ -256,7 +256,7 @@ class TRANTOR_EXPORT EventLoop : NonCopyable
     /**
      * @brief Set the index of the event loop.
      *
-     * @param index
+     * @param index 1
      */
     void setIndex(size_t index)
     {

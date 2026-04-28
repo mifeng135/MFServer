@@ -19,15 +19,19 @@ MFUdpServer::MFUdpServer(MFApplication *application)
 }
 
 MFUdpServer::~MFUdpServer() {
-    if (!m_eventLoopThread) {
-        return;
-    }
-    m_eventLoopThread->getLoop()->runInLoop([this]()->void {
+    if (m_server) {
         m_server->stop();
-    });
+        delete m_server;
+        m_server = nullptr;
+    }
+
+    if (m_eventLoopThread) {
+        delete m_eventLoopThread;
+        m_eventLoopThread = nullptr;
+    }
+    
     delete m_tcpServerMsgPool;
-    delete m_eventLoopThread;
-    delete m_server;
+    m_tcpServerMsgPool = nullptr;
 }
 
 void MFUdpServer::init(const std::string &ip, uint16_t port, MFServiceId_t serviceId, int ioThread, uint32_t unique) {
@@ -84,7 +88,9 @@ void MFUdpServer::init(const std::string &ip, uint16_t port, MFServiceId_t servi
 }
 
 void MFUdpServer::stop() {
-    m_server->stop();
+    if (m_server) {
+        m_server->stop();
+    }
 }
 
 void MFUdpServer::onMessage(uint32_t conv, const char* buf, size_t len) {
