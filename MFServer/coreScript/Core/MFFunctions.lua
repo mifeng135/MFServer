@@ -162,7 +162,7 @@ function openDebug()
     end
 end
 
-function MFRouterHandle()  end
+function MFRouterHandle(_)  end
 
 
 local function updateFunc(new_func, old_func)

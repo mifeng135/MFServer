@@ -77,7 +77,7 @@ void MFUdpChannel::processBuffer(const char* buf, size_t len) {
     }
     while (true) {
         int psz = ikcp_peeksize(m_kcp);
-        if (psz < 0) {
+        if (psz <= 0) {
             break;
         }
         m_receiveBuffer->ensureWritableBytes(static_cast<size_t>(psz));
