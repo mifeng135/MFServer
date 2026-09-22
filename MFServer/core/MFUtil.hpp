@@ -1,11 +1,15 @@
 #ifndef MFUtil_hpp
 #define MFUtil_hpp
 
+#include <atomic>
 #include <string>
 #include <filesystem>
 
 #include "sol/sol.hpp"
-#include "MFMysqlClient.hpp"
+#include "MFMacro.h"
+#include "drogon/orm/Result.h"
+#include "drogon/orm/Row.h"
+#include "drogon/orm/Field.h"
 
 struct MFRedisReply;
 
@@ -22,8 +26,8 @@ public:
     static size_t genSessionId();
     static sol::object redisReplyToLuaObject(const MFRedisReply& reply, sol::state_view& lua);
     static sol::object getFileList(const std::string& path, const sol::this_state& ts);
-    static sol::object rowsToLuaTable(const std::vector<std::vector<MFValue>>& rows, const std::vector<MFMysqlColumn>& columns, lua_State* L);
-    static void rowToTable(const std::vector<MFValue>& row, sol::table& rowTable, const std::vector<MFMysqlColumn>& columns);
+    static sol::object rowsToLuaTable(const drogon::orm::Result& result, lua_State* L);
+    static void rowToTable(const drogon::orm::Row& row, sol::table& rowTable);
     static bool isLinux();
 	static bool isWindows();
     static std::vector<std::string> splitString(const std::string& str, const std::string& regex);

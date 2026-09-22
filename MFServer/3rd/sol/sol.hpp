@@ -2963,9 +2963,12 @@ struct pre_main {
 		#include <lua.h>
 		#include <lauxlib.h>
 		#include <lualib.h>
-		#include <lsproto.h>
 	}
 #endif // C++ Mangling for Lua vs. Not
+
+#if !defined(SOL_LUA_SHARED_SEED)
+	#define SOL_LUA_SHARED_SEED 0x5ED17ab1u
+#endif
 
 #if defined(SOL_LUAJIT)
 	#if (SOL_LUAJIT != 0)
@@ -3541,7 +3544,7 @@ COMPAT53_API void luaL_requiref(lua_State *L, const char *modname,
 #endif /* Lua 5.2 only */
 
 /* other Lua versions */
-#if !defined(LUA_VERSION_NUM) || LUA_VERSION_NUM < 501 || LUA_VERSION_NUM > 504
+#if !defined(LUA_VERSION_NUM) || LUA_VERSION_NUM < 501 || LUA_VERSION_NUM > 505
 
 #  error "unsupported Lua version (i.e. not Lua 5.1, 5.2, 5.3, or 5.4)"
 
@@ -4425,7 +4428,7 @@ extern "C" {
 }
 #endif
 
-#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 504
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 504
 
 #if !defined(LUA_ERRGCMM)
 /* So Lua 5.4 actually removes this, which breaks sol2...
@@ -28246,12 +28249,21 @@ namespace sol {
 		typedef std::unique_ptr<lua_State, detail::state_deleter> unique_base;
 
 	public:
-		state(lua_CFunction panic = default_at_panic) : unique_base(luaL_newstate()), state_view(unique_base::get()) {
+		state(lua_CFunction panic = default_at_panic)
+#if LUA_VERSION_NUM >= 505
+		: unique_base(lua_newstate(luaL_alloc, nullptr, SOL_LUA_SHARED_SEED)), state_view(unique_base::get()) {
+#else
+		: unique_base(luaL_newstate()), state_view(unique_base::get()) {
+#endif
 			set_default_state(unique_base::get(), panic);
 		}
 
 		state(lua_CFunction panic, lua_Alloc alfunc, void* alpointer = nullptr)
+#if LUA_VERSION_NUM >= 505
+		: unique_base(lua_newstate(alfunc, alpointer, SOL_LUA_SHARED_SEED)), state_view(unique_base::get()) {
+#else
 		: unique_base(lua_newstate(alfunc, alpointer)), state_view(unique_base::get()) {
+#endif
 			set_default_state(unique_base::get(), panic);
 		}
 

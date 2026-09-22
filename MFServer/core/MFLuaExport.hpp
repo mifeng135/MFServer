@@ -16,7 +16,7 @@ public:
 	static void exportMFShareData(sol::state& lua);
 	static void exportMFLuaServiceManager(sol::state& lua);
 	static void exportMFRedisPoolManager(sol::state& lua);
-	static void exportMFMysqlPoolManager(sol::state& lua);
+	static void exportMFSqlPoolManager(sol::state& lua);
 	static void exportMFConnectManager(sol::state& lua);
 	static void exportMFProfiler(sol::state& lua, MFLuaProfiler* luaProfiler);
 };

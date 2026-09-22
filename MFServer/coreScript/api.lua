@@ -15,11 +15,12 @@
 ---@field addSearchPath fun(path:string)
 ---@field ensureExportHttpRequest fun()
 ---@field preloadSharedTable fun(rootDir:string)
----@field luaShareTable fun(moduleName:string, filename:string):number
----@field luaUpdateTable fun(moduleName:string, filename:string):number
----@field luaQueryTable fun(moduleName:string):table|nil
----@field luaTableGeneration fun(moduleName:string):number
----@field jsonLoad fun(fullPath:string):boolean, string
+---@field loadShareTable fun(moduleName:string, filename:string):number
+---@field updateShareTable fun(moduleName:string, filename:string):number
+---@field queryShareTable fun(moduleName:string):table|nil
+---@field shareTableGeneration fun(moduleName:string):number
+---@field reclaimShareTable fun(moduleName:string):number
+---@field reclaimShareTables fun()
 MFUtil = {}
 
 ---@class MFApplication
@@ -80,10 +81,7 @@ MFNativeRedis = {}
 ---@field queryAsync fun(sql:string, service:number, key:number):number
 ---@field queryOneAsync fun(sql:string, service:number, key:number):number
 ---@field executeAsync fun(sql:string, service:number, key:number):number
----@field beginTransaction fun(service:number, key:number):number
----@field executeInTransaction fun(transactionId:number, sql:string, service:number, key:number):number
----@field commitTransaction fun(transactionId:number, service:number, key:number):number
----@field rollbackTransaction fun(transactionId:number, service:number, key:number):number
+---@field executeAsyncTransaction fun(sqls:string[], service:number, key:number):number
 MFNativeMysql = {}
 
 ---@class MFSocket

@@ -8,7 +8,7 @@
 #include "MFLuaMessage.hpp"
 #include "MFLuaService.hpp"
 #include "MFLuaServiceManager.hpp"
-#include "MFJsonConfig.hpp"
+#include "MFShareTable.hpp"
 
 
 MFRedisConnectPool::MFRedisConnectPool()
@@ -172,20 +172,28 @@ MFNativeLuaRedis* MFRedisPoolManager::getNativeLuaRedis(int key, const sol::this
         }
     }
 
-    auto config = MFJsonConfig::instance().get(MFRedisConfig, std::to_string(key));
-    if (config == nullptr || !config->isObject()) {
+    std::string ip;
+    std::string password;
+    int port = 0;
+    int db = 0;
+    int minPoolSize = 0;
+    int maxPoolSize = 0;
+    int maxIdleTime = 0;
+    const bool found = MFShareTable::getInstance()->withEntry(MFRedisConfig, key, [&](lua_State* L) {
+        ip = MFShareTable::fieldString(L, "ip");
+        port = MFShareTable::fieldInt(L, "port");
+        password = MFShareTable::fieldString(L, "password");
+        db = MFShareTable::fieldInt(L, "db");
+        minPoolSize = MFShareTable::fieldInt(L, "minPoolSize");
+        maxPoolSize = MFShareTable::fieldInt(L, "maxPoolSize");
+        maxIdleTime = MFShareTable::fieldInt(L, "maxIdleTime");
+    });
+    if (!found) {
         MFApplication::getInstance()->logInfo("MFRedisPoolManager::getNativeLuaRedis not found config for key = {}", key);
         return nullptr;
     }
 
     MFRedisConnectPool* pool = new MFRedisConnectPool();
-    const std::string& ip = (*config)["ip"].asString();
-    int port = (*config)["port"].asInt();
-    const std::string& password = (*config)["password"].asString();
-    int db = (*config)["db"].asInt();
-    int minPoolSize = (*config)["minPoolSize"].asInt();
-    int maxPoolSize = (*config)["maxPoolSize"].asInt();
-    int maxIdleTime = (*config)["maxIdleTime"].asInt();
 
     pool->init(ip, port, password, db, minPoolSize, maxPoolSize, maxIdleTime);
     MFNativeLuaRedis* nativeLuaRedis = new MFNativeLuaRedis(pool);

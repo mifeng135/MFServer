@@ -6,15 +6,15 @@
 #include "MFLuaServiceManager.hpp"
 #include "MFRedisConnectPool.hpp"
 #include "MFIoPool.hpp"
-#include "MFMysqlConnectPool.hpp"
+#include "MFSqlConnectPool.hpp"
 #include "spdlog/fmt/bundled/args.h"
 #include "MFLuaMessage.hpp"
 #include "MFSnowflake.hpp"
 #include "MFConnectionManager.hpp"
 #include "MFAnnotationHandle.hpp"
-#include "MFLuaByteCodeCache.hpp"
-#include "MFJsonConfig.hpp"
+#include "MFLuaProtoCache.hpp"
 #include "MFUdpChannelManager.hpp"
+#include "MFShareTable.hpp"
 
 MFApplication* MFApplication::m_instance = nullptr;
 
@@ -172,7 +172,7 @@ void MFApplication::closeState() {
 void MFApplication::initInstance() {
     MFLuaServiceManager::getInstance();
     MFRedisPoolManager::getInstance();
-    MFMysqlPoolManager::getInstance();
+    MFSqlPoolManager::getInstance();
     MFConnectionManager::getInstance();
     MFAnnotationHandle::getInstance();
 	MFUdpChannelManager::getInstance();
@@ -232,7 +232,7 @@ void MFApplication::luaLogServiceName(std::string_view serviceName, std::string_
 }
 
 void MFApplication::initLua() {
-    luaP_init();
+    MFShareTable::getInstance();
 	m_state = sol::state();
     auto& state = m_state.value();
     MFLuaExport::exportLua(state);
@@ -242,8 +242,8 @@ void MFApplication::initLua() {
     MFUtil::addSearchPath(currentPath, state);
     MFUtil::addSearchPath(currentPath + "/coreScript", state);
 
-    MFLuaByteCodeCache::getInstance()->addRequireSearcher(state, currentPath);
-    MFLuaByteCodeCache::getInstance()->addRequireSearcher(state, currentPath + "/coreScript");
+    MFLuaProtoCache::getInstance()->addRequireSearcher(state, currentPath);
+    MFLuaProtoCache::getInstance()->addRequireSearcher(state, currentPath + "/coreScript");
 
     try {
         //preload 
@@ -268,12 +268,12 @@ void MFApplication::shutDown() {
     drogon::app().getLoop()->runInLoop([]()->void {
         MFLuaServiceManager::destroyInstance();
         MFRedisPoolManager::destroyInstance();
-        MFMysqlPoolManager::destroyInstance();
+        MFSqlPoolManager::destroyInstance();
         MFAnnotationHandle::destroyInstance();
         MFConnectionManager::destroyInstance();
 		MFUdpChannelManager::destroyInstance();
         drogon::app().quit();
-        luaP_shutdown();
+        MFShareTable::destroyInstance();
         MFApplication::destroyInstance();
     });
 }
@@ -347,7 +347,7 @@ void MFApplication::initFileWatch(const std::string& path) {
                 std::replace(filePath.begin(), filePath.end(), '\\', '/');
                 std::replace(filePath.begin(), filePath.end(), '/', '.');
 				MFApplication::getInstance()->logInfo("file module change = {}", filePath);
-                MFLuaByteCodeCache::getInstance()->removeRequireBytecodeCache(filePath);
+                MFLuaProtoCache::getInstance()->removeRequireCache(filePath);
                 MFLuaServiceManager::getInstance()->nativeDispatchHotReload(filePath, "");
             }
         }

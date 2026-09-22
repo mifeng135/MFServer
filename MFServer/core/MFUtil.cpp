@@ -4,19 +4,22 @@
 #include <sstream>
 #include <thread>
 #include <regex>
-#include "MFValue.hpp"
 #include "MFApplication.hpp"
 #include "MFRedisClient.hpp"
+#include "MFShareTable.hpp"
 
 #ifdef _WIN32
     #include<Windows.h>
-    #include <shlwapi.h>
-    #pragma comment(lib, "shlwapi.lib")
-    
+
     char* dirname_win(char* path) {
         static char dir[MAX_PATH];
         strcpy_s(dir, MAX_PATH, path);
-        PathRemoveFileSpecA(dir);
+        char* slash = strrchr(dir, '/');
+        char* back = strrchr(dir, '\\');
+        char* sep = slash > back ? slash : back;
+        if (sep) {
+            *sep = '\0';
+        }
         if (strlen(dir) == 0) {
             strcpy_s(dir, MAX_PATH, ".");
         }
@@ -66,7 +69,7 @@ std::string MFUtil::getCurrentPath()
     char* dirName = dirname(const_cast<char*>(cstr));
     std::string projectDir(dirName);
 #ifdef _WIN32
-    return projectDir.substr(0, projectDir.find_last_of("\\"));
+    return projectDir.substr(0, projectDir.find_last_of("/\\"));
 #else
     return projectDir.substr(0, projectDir.find_last_of("/"));
 #endif
@@ -142,102 +145,109 @@ sol::object MFUtil::getFileList(const std::string& path, const sol::this_state& 
 }
 
 
-void MFUtil::rowToTable(const std::vector<MFValue> &row, sol::table &rowTable, const std::vector<MFMysqlColumn> &columns) {
-    lua_State* L = rowTable.lua_state();
-    rowTable.push();
-    
-    auto colCount = row.size();
-    for (unsigned i = 0; i < colCount; ++i) {
-        const MFValue &value = row[i];
-        const std::string& name = columns[i].name;
-        lua_pushlstring(L, name.c_str(), name.size());
-        switch (value.getType()) {
-            case MFValue::Type::UINT64:
-                lua_pushinteger(L, static_cast<lua_Integer>(value.getUInt()));
-                break;
-            case MFValue::Type::INT64:
-                lua_pushinteger(L, static_cast<lua_Integer>(value.getSint()));
-                break;
-            case MFValue::Type::FLOAT:
-                lua_pushnumber(L, static_cast<lua_Number>(value.getFloat()));
-                break;
-            case MFValue::Type::DOUBLE:
-                lua_pushnumber(L, static_cast<lua_Number>(value.getDouble()));
-                break;
-            case MFValue::Type::BOOL:
-                lua_pushboolean(L, value.getBool());
-                break;
-            case MFValue::Type::STRING:
-            case MFValue::Type::RAW: {
-                const std::string& str = value.getString();
-                lua_pushlstring(L, str.c_str(), str.size());
-                break;
-            }
-            case MFValue::Type::VNULL:
-                lua_pushnil(L);
-                break;
-            default: {
-                const std::string& str = value.getString();
-                lua_pushlstring(L, str.c_str(), str.size());
-                break;
-            }
-        }
-        
-        lua_rawset(L, -3);
+namespace {
+
+bool isAllDigits(const char* s, size_t n)
+{
+    if (n == 0) {
+        return false;
     }
-    
-    lua_pop(L, 1); 
+    size_t i = 0;
+    if (s[0] == '-' || s[0] == '+') {
+        if (n == 1) {
+            return false;
+        }
+        i = 1;
+    }
+    for (; i < n; ++i) {
+        if (s[i] < '0' || s[i] > '9') {
+            return false;
+        }
+    }
+    return true;
 }
 
-sol::object MFUtil::rowsToLuaTable(const std::vector<std::vector<MFValue>>& rows, const std::vector<MFMysqlColumn>& columns, lua_State* L) {
-    int colCount = static_cast<int>(columns.size());
-    int rowCount = static_cast<int>(rows.size());
-    
-    lua_createtable(L, rowCount, 0); 
-    int outerTable = lua_gettop(L);
-    
+bool isFloatLiteral(const char* s, size_t n)
+{
+    bool seenDot = false;
+    bool seenDigit = false;
+    size_t i = 0;
+    if (n == 0) {
+        return false;
+    }
+    if (s[0] == '-' || s[0] == '+') {
+        i = 1;
+    }
+    for (; i < n; ++i) {
+        if (s[i] == '.') {
+            if (seenDot) {
+                return false;
+            }
+            seenDot = true;
+            continue;
+        }
+        if (s[i] < '0' || s[i] > '9') {
+            return false;
+        }
+        seenDigit = true;
+    }
+    return seenDot && seenDigit;
+}
+
+void pushField(lua_State* L, const drogon::orm::Field& field)
+{
+    if (field.isNull()) {
+        lua_pushnil(L);
+        return;
+    }
+    const char* s = field.c_str();
+    const size_t n = field.length();
+    if (n == 1 && (s[0] == 't' || s[0] == 'f')) {
+        lua_pushboolean(L, s[0] == 't');
+        return;
+    }
+    if (isAllDigits(s, n)) {
+        lua_pushinteger(L, static_cast<lua_Integer>(field.as<long long>()));
+        return;
+    }
+    if (isFloatLiteral(s, n)) {
+        lua_pushnumber(L, static_cast<lua_Number>(field.as<double>()));
+        return;
+    }
+    lua_pushlstring(L, s, n);
+}
+
+}  // namespace
+
+void MFUtil::rowToTable(const drogon::orm::Row& row, sol::table& rowTable)
+{
+    lua_State* L = rowTable.lua_state();
+    rowTable.push();
+    const auto colCount = row.size();
+    for (drogon::orm::Row::SizeType i = 0; i < colCount; ++i) {
+        const auto field = row[i];
+        const char* name = field.name();
+        lua_pushstring(L, name ? name : "");
+        pushField(L, field);
+        lua_rawset(L, -3);
+    }
+    lua_pop(L, 1);
+}
+
+sol::object MFUtil::rowsToLuaTable(const drogon::orm::Result& result, lua_State* L)
+{
+    const int rowCount = static_cast<int>(result.size());
+    const int colCount = static_cast<int>(result.columns());
+    lua_createtable(L, rowCount, 0);
+    const int outerTable = lua_gettop(L);
     for (int r = 0; r < rowCount; ++r) {
         lua_createtable(L, 0, colCount);
-        
-        const std::vector<MFValue>& row = rows[r];
-        for (int c = 0; c < colCount && c < static_cast<int>(row.size()); ++c) {
-            const std::string& name = columns[c].name;
-            const MFValue& value = row[c];
-            
-            lua_pushlstring(L, name.c_str(), name.size());
-            
-            switch (value.getType()) {
-                case MFValue::Type::UINT64:
-                    lua_pushinteger(L, static_cast<lua_Integer>(value.getUInt()));
-                    break;
-                case MFValue::Type::INT64:
-                    lua_pushinteger(L, static_cast<lua_Integer>(value.getSint()));
-                    break;
-                case MFValue::Type::FLOAT:
-                    lua_pushnumber(L, static_cast<lua_Number>(value.getFloat()));
-                    break;
-                case MFValue::Type::DOUBLE:
-                    lua_pushnumber(L, static_cast<lua_Number>(value.getDouble()));
-                    break;
-                case MFValue::Type::BOOL:
-                    lua_pushboolean(L, value.getBool());
-                    break;
-                case MFValue::Type::STRING:
-                case MFValue::Type::RAW: {
-                    const std::string& str = value.getString();
-                    lua_pushlstring(L, str.c_str(), str.size());
-                    break;
-                }
-                case MFValue::Type::VNULL:
-                    lua_pushnil(L);
-                    break;
-                default: {
-                    const std::string& str = value.getString();
-                    lua_pushlstring(L, str.c_str(), str.size());
-                    break;
-                }
-            }
-            
+        const auto row = result[static_cast<drogon::orm::Result::SizeType>(r)];
+        for (int c = 0; c < colCount; ++c) {
+            const auto field = row[static_cast<drogon::orm::Row::SizeType>(c)];
+            const char* name = field.name();
+            lua_pushstring(L, name ? name : "");
+            pushField(L, field);
             lua_rawset(L, -3);
         }
         lua_rawseti(L, outerTable, static_cast<lua_Integer>(r) + 1);
@@ -337,7 +347,7 @@ void MFUtil::preloadSharedTable(const std::string& rootDir)
             continue;
         }
 	    std::string moduleName = getFileName(fullPath);
-        int result = luaP_sharetable(moduleName.c_str(), fullPath.c_str());
+        int result = MFShareTable::getInstance()->share(moduleName, fullPath);
         if (result != 0) {
             MFApplication::getInstance()->logInfo("Failed to preload shared table from {}: error code {}", moduleName, result);
         }

@@ -33,7 +33,7 @@ function MFCoder.baseEncode(msgId, data, magic, msgSeq)
     local bodyLen = #data
     local fmt = baseFmt .. bodyLen ---(i = (H + i + i + pbLen)<2 + 4 + 4 + pbLen>) (---H magic ---i msgId ---i msgSeq ---c(len)bodyLen)
     local totalLen = baseHeaderLen + bodyLen
-    return string.pack(fmt, totalLen, magic, msgId, msgSeq, data), totalLen
+    return string.pack(fmt, totalLen, magic or 0, msgId, msgSeq or 0, data), totalLen
 end
 
 function MFCoder.baseDecode(data)

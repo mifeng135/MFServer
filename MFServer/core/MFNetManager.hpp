@@ -2,6 +2,7 @@
 #define MFTcpServerManager_hpp
 
 #include <shared_mutex>
+#include <string>
 
 #include "drogon/HttpController.h"
 #include "sol/sol.hpp"
@@ -34,7 +35,7 @@ public:
     bool removeClient(uint32_t configId);
 private:
     std::shared_ptr<MFTcpClient> getClient(uint32_t configId, const sol::this_state &state, bool isRpc);
-    std::shared_ptr<const Json::Value> getConfig(uint32_t configId, uint8_t type = MFNetTypeNormal);
+    bool loadShareConfig(const char* name, uint32_t configId, std::string& ip, int& port, int* io);
 private:
     std::shared_ptr<MFWebServer>            m_webServer;
     MFApplication*                          m_application;

@@ -60,7 +60,7 @@ function MFSqlMapper.escapeValue(str)
     return tostring(str)
 end
 
---- @param opt table { id, params mode }
+--- @param opt table { id, params, db }
 ---   - id: 注册的语句 id
 ---   - params: 命名参数，用于 #{key} 与 ${key}
 function MFSqlMapper.run(opt)
@@ -71,14 +71,14 @@ function MFSqlMapper.run(opt)
         error("MFSqlMapper: 未找到 SQL id = " .. id)
     end
     local finalSql = MFSqlMapper.parseTemplate(entry.sql, opt.params)
-    local dbName = entry.db
+    local db = opt.db or entry.db
     local mode = entry.mode
     if mode == Sql_QUERY_LIST then
-        return MFLuaSql.queryCoroutine(finalSql, dbName)
+        return MFLuaSql.queryCoroutine(finalSql, db)
     elseif mode == Sql_QUERY_ONE then
-        return MFLuaSql.queryOneCoroutine(finalSql, dbName)
+        return MFLuaSql.queryOneCoroutine(finalSql, db)
     end
-    return MFLuaSql.executeCoroutine(finalSql, dbName)
+    return MFLuaSql.executeCoroutine(finalSql, db)
 end
 
 ---@param execRes boolean 如果为true 则不是查询语句

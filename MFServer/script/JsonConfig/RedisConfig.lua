@@ -1,0 +1,13 @@
+local RedisConfig = {
+    {
+        ip = "192.168.61.129",
+        port = 6379,
+        password = "",
+        db = 0,
+        minPoolSize = 2,
+        maxPoolSize = 4,
+        maxIdleTime = 1000,
+    },
+}
+
+return RedisConfig

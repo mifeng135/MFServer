@@ -18,7 +18,7 @@ MFApplication.preloadProto(MFConfig.protoDir)
 MFApplication.setWorkThread(MFConfig.nativeWorkCount)
 MFApplication.scanRouter(MFApplication.getScriptRoot())
 
-MFUtil.jsonLoad(projectPath .. "/script/JsonConfig")
+MFUtil.preloadSharedTable(projectPath .. "/script/JsonConfig")
 MFUtil.preloadSharedTable(projectPath .. "/script/Config")
 
 MFLuaServiceManager.init(MFConfig.scriptWorkCount)

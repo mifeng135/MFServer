@@ -1,7 +1,5 @@
 require "Common.GlobalRequire"
 
-
-
 function main(serviceId, serviceName)
     MF.core.start(serviceId, serviceName)
     local v1, v2 = MF.rpcClient.send(RpcConfig.Gate29, 1, "22", "33")

@@ -53,51 +53,8 @@ function MFLuaSql.executeCoroutine(sql, dbName)
     return coroutineYield "suspended"
 end
 
-
-
-
-
---------------------------------Transaction------------------------------------
---- 开启事务
----@param dbName string 数据库名称
----@return number|nil transactionId 事务ID
-function MFLuaSql.beginTransaction(dbName)
-    local transactionId = MFNativeMysql.beginTransaction(MF.core.serviceId, dbName)
-    coMap[transactionId] = coroutineRunning()
-    local isSuccess = coroutineYield "suspended"
-    if not isSuccess then
-        return nil
-    end
-    return transactionId
-end
-
---- 在事务中执行SQL
----@param transactionId number 事务ID
----@param sql string SQL语句
----@param dbName string 数据库名称
----@return boolean isSuccess 是否执行成功
-function MFLuaSql.executeInTransaction(transactionId, sql, dbName)
-    local sessionId = MFNativeMysql.executeInTransaction(transactionId, sql, MF.core.serviceId, dbName)
-    coMap[sessionId] = coroutineRunning()
-    return coroutineYield "suspended"
-end
-
---- 提交事务
----@param transactionId number 事务ID
----@param dbName string 数据库名称
----@return boolean isSuccess 是否提交成功
-function MFLuaSql.commitTransaction(transactionId, dbName)
-    local sessionId = MFNativeMysql.commitTransaction(transactionId, MF.core.serviceId, dbName)
-    coMap[sessionId] = coroutineRunning()
-    return coroutineYield "suspended"
-end
-
---- 回滚事务
----@param transactionId number 事务ID
----@param dbName string 数据库名称
----@return boolean isSuccess 是否回滚成功
-function MFLuaSql.rollbackTransaction(transactionId, dbName)
-    local sessionId = MFNativeMysql.rollbackTransaction(transactionId, MF.core.serviceId, dbName)
+function MFLuaSql.executeTransaction(sqls, db)
+    local sessionId = MFNativeMysql.executeAsyncTransaction(sqls, MF.core.serviceId, db)
     coMap[sessionId] = coroutineRunning()
     return coroutineYield "suspended"
 end

@@ -62,17 +62,17 @@ function MFCore.coResume(co, ...)
 end
 
 --------------------------------------------- send begin ------------------------------------
-function MFCore.send(dst, cmd, ...)
+function MFCore.localSend(dst, cmd, ...)
     local data, len = serialize.pack(cmd, ...)
     MFLuaServiceManager.send(MFCore.serviceId, dst, data, len, LuaMessageTypeLuaSend, false, false)
 end
 
-function MFCore.sendMulti(dstList, cmd, ...)
+function MFCore.localSendMulti(dstList, cmd, ...)
     local data, len = serialize.pack(cmd, ...)
     MFLuaServiceManager.sendMulti(MFCore.serviceId, data, len, dstList)
 end
 
-function MFCore.request(dst, cmd, ...)
+function MFCore.localRequest(dst, cmd, ...)
     local msg, len = serialize.pack(cmd, ...)
     local sessionId = MFLuaServiceManager.send(MFCore.serviceId, dst, msg, len, LuaMessageTypeLuaRequest, true, false)
     callCoMap[sessionId] = coroutineRunning()
@@ -80,7 +80,7 @@ function MFCore.request(dst, cmd, ...)
     return serialize.unpack(data, l)
 end
 
-function MFCore.response(sessionId, ...)
+function MFCore.localResponse(sessionId, ...)
     if sessionId == 0 then
         return
     end

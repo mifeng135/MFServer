@@ -3,11 +3,11 @@
 
 #include "sol/sol.hpp"
 #include "MFLuaProfiler.hpp"
+#include "MFSqlConnectPool.hpp"
 
 #include "trantor/utils/MPSCQueue.hpp"
 
 class MFMessage;
-struct MFMysqlResult;
 struct MFRedisResult;
 
 // empty service memory use 100K
@@ -27,7 +27,7 @@ private:
 private:
     void processMessage(MFMessage* message);
 public:
-    void sqlMessageQuery(const MFMysqlResult& result, bool queryOne, int msgType);
+    void sqlMessageQuery(const MFSqlResult& result, bool queryOne, int msgType);
     void redisMessage(const MFRedisResult& result, int msgType);
 private:
 	void logTraceback(sol::error& e);

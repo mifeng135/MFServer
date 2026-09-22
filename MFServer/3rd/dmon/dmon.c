@@ -282,7 +282,7 @@ typedef struct dmon__state {
     HANDLE thread_handle;
     CRITICAL_SECTION mutex;
     dmon__win32_event* events;
-    uint32_t quit;
+    LONG volatile quit;
 } dmon__state;
 
 static bool _dmon_init;

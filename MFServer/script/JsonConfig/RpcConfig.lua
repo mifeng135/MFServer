@@ -1,0 +1,14 @@
+local RpcConfig = {
+    {
+        ip = "127.0.0.1",
+        port = 8001,
+        io = 2,
+    },
+    [29] = {
+        ip = "127.0.0.1",
+        port = 8001,
+        io = 2,
+    },
+}
+
+return RpcConfig

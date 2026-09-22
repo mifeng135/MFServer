@@ -2,8 +2,9 @@
 #include "MFLuaService.hpp"
 
 #include <utility>
+#include "MFSqlConnectPool.hpp"
 #include "MFLuaExport.hpp"
-#include "MFLuaByteCodeCache.hpp"
+#include "MFLuaProtoCache.hpp"
 #include "MFUtil.hpp"
 #include "MFApplication.hpp"
 #include "MFLuaMessage.hpp"
@@ -39,8 +40,8 @@ void MFLuaService::init() {
     MFUtil::addSearchPath(scriptRootPath, m_state);
     MFUtil::addSearchPath(rootPath + "/coreScript", m_state);
 
-    MFLuaByteCodeCache::getInstance()->addRequireSearcher(m_state, rootPath + "/coreScript");
-    MFLuaByteCodeCache::getInstance()->addRequireSearcher(m_state, scriptRootPath);
+    MFLuaProtoCache::getInstance()->addRequireSearcher(m_state, rootPath + "/coreScript");
+    MFLuaProtoCache::getInstance()->addRequireSearcher(m_state, scriptRootPath);
 
 
     std::string serviceFullPath = getFileFullPath();
@@ -188,21 +189,20 @@ void MFLuaService::createObject(MFMessage *msg) {
 }
 
 
-void MFLuaService::sqlMessageQuery(const MFMysqlResult& result, bool queryOne, int msgType) {
+void MFLuaService::sqlMessageQuery(const MFSqlResult& result, bool queryOne, int msgType) {
 	sol::function handler = m_messageHandlers[msgType];
-    size_t rowSize = result.rows.size();
-    if (rowSize == 0) {
+    if (!result.success || !result.result.has_value() || result.result->size() == 0) {
         handler(result.sessionId, result.success);
         return;
     }
-    const std::vector<std::vector<MFValue>>& rows = result.rows;
+    const drogon::orm::Result& rows = *result.result;
     if (queryOne) {
-        sol::table rowTable = m_state.create_table(0, static_cast<int>(result.columns.size()));
-        MFUtil::rowToTable(rows.at(0), rowTable, result.columns);
+        sol::table rowTable = m_state.create_table(0, static_cast<int>(rows.columns()));
+        MFUtil::rowToTable(rows[0], rowTable);
         handler(result.sessionId, result.success, rowTable);
         return;
     }
-    sol::object sqlListTable = MFUtil::rowsToLuaTable(rows, result.columns, m_state.lua_state());
+    sol::object sqlListTable = MFUtil::rowsToLuaTable(rows, m_state.lua_state());
     handler(result.sessionId, result.success, sqlListTable);
 }
 

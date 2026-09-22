@@ -66,7 +66,7 @@ function MFMsgHandlers.init(MFCore, messageProto, scheduleFnMap, callDstMap, cal
     end)
 
     register(MFCore, LuaMessageTypeHotReload, function(module, fullPath)
-        MFCore.reloadLua(module, fullPath)
+        MFCore.reloadLua(module)
     end)
 
     register(MFCore, LuaMessageTypeMysqlQuery, function(sessionId, success, sqlResult)
@@ -91,10 +91,6 @@ function MFMsgHandlers.init(MFCore, messageProto, scheduleFnMap, callDstMap, cal
 
     register(MFCore, LuaMessageTypeRedisCmd, function(sessionId, result)
         MF.redis.onExecuteCallBack(sessionId, result)
-    end)
-
-    register(MFCore, LuaMessageTypeReloadConfig, function()
-        MF.config.clear()
     end)
 
     register(MFCore, LuaMessageTypeUdpServer, function(socketCmd, fd, viewData)

@@ -7,7 +7,7 @@
 #include "MFLuaMessage.hpp"
 #include "MFLuaServiceManager.hpp"
 #include "MFUdpServer.hpp"
-#include "MFJsonConfig.hpp"
+#include "MFShareTable.hpp"
 
 MFNetManager::MFNetManager(MFApplication* application)
 : m_application(application) {
@@ -19,13 +19,13 @@ MFNetManager::~MFNetManager() = default;
 
 void MFNetManager::createTcpServer(uint32_t configId, MFServiceId_t serviceId, uint8_t type) {
     std::shared_ptr<MFTcpServer> server = std::make_shared<MFTcpServer>(m_application);
-    auto config = getConfig(configId, type);
-	if (!config) {
+    std::string ip;
+    int port = 0;
+    int ioThread = 0;
+    const char* name = type == MFNetTypeRPC ? MFRpcConfig : MFSocketConfig;
+    if (!loadShareConfig(name, configId, ip, port, &ioThread)) {
         return;
     }
-    const std::string& ip = (*config)["ip"].asString();
-    int port = (*config)["port"].asInt();
-	int ioThread = (*config)["io"].asInt();
     server->init(ip, port, serviceId, ioThread, configId, type);
     {
         std::unique_lock ul(m_tcpServerMtx);
@@ -34,34 +34,31 @@ void MFNetManager::createTcpServer(uint32_t configId, MFServiceId_t serviceId, u
 }
 
 void MFNetManager::createHttpServer(uint32_t configId, MFServiceId_t serviceId) {
-    auto config = getConfig(configId);
-    if (!config) {
+    std::string ip;
+    int port = 0;
+    if (!loadShareConfig(MFSocketConfig, configId, ip, port, nullptr)) {
         return;
     }
-    const std::string& ip = (*config)["ip"].asString();
-    int port = (*config)["port"].asInt();
     m_webServer->initHttp(ip, port, serviceId);
 }
 
 void MFNetManager::createWebSocketServer(uint32_t configId, MFServiceId_t serviceId) {
-    auto config = getConfig(configId);
-    if (!config) {
+    std::string ip;
+    int port = 0;
+    if (!loadShareConfig(MFSocketConfig, configId, ip, port, nullptr)) {
         return;
     }
-    const std::string& ip = (*config)["ip"].asString();
-    int port = (*config)["port"].asInt();
     m_webServer->initWebSocket(ip, port, serviceId);
 }
 
 void MFNetManager::createUdpServer(uint32_t configId, MFServiceId_t serviceId) {
     std::shared_ptr<MFUdpServer> server = std::make_shared<MFUdpServer>(m_application);
-    auto config = getConfig(configId);
-    if (!config) {
+    std::string ip;
+    int port = 0;
+    int ioThread = 0;
+    if (!loadShareConfig(MFSocketConfig, configId, ip, port, &ioThread)) {
         return;
     }
-    const std::string& ip = (*config)["ip"].asString();
-    int port = (*config)["port"].asInt();
-    int ioThread = (*config)["io"].asInt();
     server->init(ip, port, serviceId, ioThread, configId);
     {
         std::unique_lock ul(m_udpServerMtx);
@@ -144,14 +141,11 @@ std::shared_ptr<MFTcpClient> MFNetManager::getClient(uint32_t configId, const so
         }
     }
 
-    auto config = MFJsonConfig::instance().get(MFRpcConfig, std::to_string(configId));
-    if (config == nullptr || !config->isObject()) {
-        MFApplication::getInstance()->logInfo("clientSend error {} config not find", configId);
+    std::string ip;
+    int port = 0;
+    if (!loadShareConfig(MFRpcConfig, configId, ip, port, nullptr)) {
         return nullptr;
     }
-
-    const std::string& ip = (*config)["ip"].asString();
-    int port = (*config)["port"].asInt();
 
     auto stateView = sol::state_view(state);
     MFServiceId_t serviceId = stateView["MF"]["core"]["serviceId"];
@@ -181,13 +175,18 @@ bool MFNetManager::removeClient(uint32_t configId) {
     return true;
 }
 
-std::shared_ptr<const Json::Value> MFNetManager::getConfig(uint32_t configId, uint8_t type) {
-	std::string configName = type == MFNetTypeRPC ? MFRpcConfig : MFSocketConfig;
-    auto config = MFJsonConfig::instance().get(configName, std::to_string(configId));
-    if (config == nullptr || !config->isObject()) {
-        MFApplication::getInstance()->logInfo("getConfig not found config for key = {}", configId);
-        return nullptr;
+bool MFNetManager::loadShareConfig(const char* name, uint32_t configId, std::string& ip, int& port, int* io) {
+    const bool found = MFShareTable::getInstance()->withEntry(name, static_cast<lua_Integer>(configId), [&](lua_State* L) {
+        ip = MFShareTable::fieldString(L, "ip");
+        port = MFShareTable::fieldInt(L, "port");
+        if (io) {
+            *io = MFShareTable::fieldInt(L, "io");
+        }
+    });
+    if (!found) {
+        MFApplication::getInstance()->logInfo("loadShareConfig not found {}.{}", name, configId);
+        return false;
     }
-    return config;
+    return true;
 }
 

@@ -8,13 +8,13 @@
 #include "MFUtil.hpp"
 #include "MFNetManager.hpp"
 #include "MFLuaShareData.hpp"
+#include "MFShareTable.hpp"
 #include "MFMsgPack.h"
-#include "MFMysqlConnectPool.hpp"
+#include "MFSqlConnectPool.hpp"
 #include "MFLuaExtend.h"
 #include "MFWebServer.hpp"
 #include "MFRedisConnectPool.hpp"
 #include "MFAnnotationHandle.hpp"
-#include "MFJsonConfig.hpp"
 #include "MFUdpChannelManager.hpp"
 #include "MFLuaProfiler.hpp"
 #include "MFLuaService.hpp"
@@ -24,6 +24,18 @@
 #define LUA_MEMFN_CONST(r, cls, m, ...) static_cast<r(cls::*)(__VA_ARGS__)const>(&cls::m)
 #define LUA_MEMFN_STATIC(r, cls, m, ...) static_cast<r(*)(__VA_ARGS__)>(&cls::m)
 
+extern "C" {
+int luaopen_cache(lua_State* L);
+}
+
+static void disableUpstreamCodeCache(lua_State* L) {
+    int top = lua_gettop(L);
+    luaL_requiref(L, "cache", luaopen_cache, 0);
+    lua_getfield(L, -1, "mode");
+    lua_pushstring(L, "OFF");
+    lua_call(L, 1, 0);
+    lua_settop(L, top);
+}
 
 void MFLuaExport::exportLua(sol::state& lua)
 {
@@ -33,6 +45,7 @@ void MFLuaExport::exportLua(sol::state& lua)
         sol::lib::math, sol::lib::coroutine,
         sol::lib::debug
     );
+    disableUpstreamCodeCache(lua);
     luaopen_cmsgpack_safe(lua);
     luaopen_seri(lua);
     luaopen_pb(lua);
@@ -45,7 +58,7 @@ void MFLuaExport::exportLua(sol::state& lua)
     exportMFShareData(lua);
     exportMFNetManager(lua);
     exportMFRedisPoolManager(lua);
-    exportMFMysqlPoolManager(lua);
+    exportMFSqlPoolManager(lua);
     exportMFConnectManager(lua);
 }
 
@@ -100,30 +113,32 @@ void MFLuaExport::exportMFUtil(sol::state& lua)
 		MFUtil::preloadSharedTable(rootDir);
     };
 
-    table["luaShareTable"] = [](const std::string& name, const std::string& filename) -> int {
-        return luaP_sharetable(name.c_str(), filename.c_str());
+    table["loadShareTable"] = [](const std::string& name, const std::string& filename) -> int {
+        return MFShareTable::getInstance()->share(name, filename);
     };
 
-    table["luaUpdateTable"] = [](const std::string& name, const std::string& filename) -> int {
-        return luaP_updatetable(name.c_str(), filename.c_str());
+    table["updateShareTable"] = [](const std::string& name, const std::string& filename) -> int {
+        return MFShareTable::getInstance()->update(name, filename);
     };
 
-    table["luaQueryTable"] = [](const sol::this_state& ts, const std::string& name) -> sol::object {
+    table["queryShareTable"] = [](const sol::this_state& ts, const std::string& name) -> sol::object {
         lua_State *L = ts;
-        if (luaP_querytable(L, name.c_str())) {
+        if (MFShareTable::getInstance()->query(L, name)) {
             return sol::stack::pop<sol::object>(L);
         }
         return sol::lua_nil;
     };
 
-    table["luaTableGeneration"] = [](const std::string& name) -> unsigned int {
-        return luaP_generation(name.c_str());
+    table["shareTableGeneration"] = [](const std::string& name) -> unsigned int {
+        return MFShareTable::getInstance()->generation(name);
     };
 
-    table["jsonLoad"] = [](const std::string& fullPath)-> std::tuple<bool, std::string> {
-        std::string err;
-        bool ok = MFJsonConfig::instance().loadAllFromDirectory(fullPath, true, err);
-        return std::make_tuple(ok, err);
+    table["reclaimShareTable"] = [](const std::string& name) -> int {
+        return MFShareTable::getInstance()->releaseOld(name);
+    };
+
+    table["reclaimShareTables"] = []() {
+        MFShareTable::getInstance()->releaseOld();
     };
 }
 
@@ -296,37 +311,24 @@ void MFLuaExport::exportMFRedisPoolManager(sol::state& lua)
     };
 }
 
-void MFLuaExport::exportMFMysqlPoolManager(sol::state& lua)
+void MFLuaExport::exportMFSqlPoolManager(sol::state& lua)
 {
     auto table = lua.create_named_table("MFNativeMysql");
 
     table["queryAsync"] = [](const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolManager::getInstance()->queryAsync(sql, serviceId, key, state);
+        return MFSqlPoolManager::getInstance()->queryAsync(sql, serviceId, key, state);
     };
 
     table["queryOneAsync"] = [](const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolManager::getInstance()->queryOneAsync(sql, serviceId, key, state);
+        return MFSqlPoolManager::getInstance()->queryOneAsync(sql, serviceId, key, state);
     };
 
     table["executeAsync"] = [](const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolManager::getInstance()->executeAsync(sql, serviceId, key, state);
+        return MFSqlPoolManager::getInstance()->executeAsync(sql, serviceId, key, state);
     };
 
-    //
-    table["beginTransaction"] = [](MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolManager::getInstance()->beginTransaction(serviceId, key, state);
-    };
-
-    table["executeInTransaction"] = [](size_t transactionId, const std::string& sql, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolManager::getInstance()->executeInTransaction(transactionId, sql, serviceId, key, state);
-    };
-
-    table["commitTransaction"] = [](size_t transactionId, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolManager::getInstance()->commitTransaction(transactionId, serviceId, key, state);
-    };
-
-    table["rollbackTransaction"] = [](size_t transactionId, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
-        return MFMysqlPoolManager::getInstance()->rollbackTransaction(transactionId, serviceId, key, state);
+    table["executeAsyncTransaction"] = [](const std::vector<std::string>& sqls, MFServiceId_t serviceId, int key, const sol::this_state& state)-> size_t {
+        return MFSqlPoolManager::getInstance()->executeAsyncTransaction(sqls, serviceId, key, state);
     };
 }
 

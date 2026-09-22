@@ -93,7 +93,7 @@ void MFAnnotationHandle::scanRouter(const std::string &dir, const sol::this_stat
             continue;
         }
         m_moduleMap[router] = modulePath;
-        MFApplication::getInstance()->logInfo("add router = <{}>, modulePath = <{}>", routerString, modulePath);
+        MFApplication::getInstance()->logInfo("add router = <{}> modulePath = <{}>", routerString, modulePath);
     }
 }
 
